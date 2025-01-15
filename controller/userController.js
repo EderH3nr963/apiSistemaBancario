@@ -16,4 +16,20 @@ const userRegister = async (req, res) => {
     res.json(response);
 }
 
-module.exports = { userLogin, userRegister };
+const sendCodeVerification = async (req, res) => {
+    const { email } = req.body;
+    
+    const response = await UserService.serviceSendCodeVerification(email);
+    
+    res.json(response);
+}
+
+const verifyCode = async (req, res) => {
+    const { code } = req.body;
+    
+    const response = await UserService.serviceVerifyCode(code);
+    
+    res.json(response);
+}
+
+module.exports = { userLogin, userRegister, sendCodeVerification, verifyCode };
