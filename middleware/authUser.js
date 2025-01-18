@@ -36,19 +36,16 @@ exports.validateUserSignUp = [
         .isEmpty()
         .withMessage('A data é obrigatória!')
         .custom((value) => {
-            // Regex para validar o formato dd/mm/yyyy
-            const regexDDMMYYYY = /^([0-2][0-9]|3[0-1])\/([0-1][0-9])\/\d{4}$/;
-
-            // Regex para validar o formato yyyy-mm-dd
-            const regexYYYYMMDD = /^\d{4}-([0-1][0-9])-([0-2][0-9]|3[0-1])$/;
-
-            // Verifica se o valor corresponde a um dos formatos
-            if (!regexDDMMYYYY.test(value) && !regexYYYYMMDD.test(value)) {
-                throw new Error('A data deve estar no formato dd/mm/yyyy ou yyyy-mm-dd!');
+            // Tenta converter o valor para uma instância de Date
+            const date = new Date(value);
+        
+            // Verifica se a data é válida
+            if (isNaN(date.getTime())) {
+                throw new Error('A data deve ser válida e no formato esperado!');
             }
-
+        
             return true;
-        })
+        })            
         .custom((value) => {
             // Normaliza a data para o formato yyyy-mm-dd
             let dateParts;
@@ -115,8 +112,34 @@ exports.validateUser = (req, res, next) => {
     if (!result.length) return next();
 
     const error = result[0].msg;
-    res.json({ success: false, message: error });
+    res.status(400).json({ success: false, statusCode: 400, mensagem: error });
 }
+
+exports.validateCpf = [
+    check('cpf')
+        .trim()
+        .not()
+        .isEmpty()
+        .withMessage('O campo CPF é obrigatório')
+        .isLength({ min: 11, max: 14 })
+        .withMessage('CPF deve ter entre 11 e 14 caracteres')
+        .custom((value) => {
+            // Remover pontuação do CPF
+            const cleanCpf = value.replace(/\D/g, ''); // Remove qualquer caracter não numérico
+            if (cleanCpf.length !== 11) {
+                throw new Error('CPF deve conter exatamente 11 números');
+            }
+
+            return true;
+        }),
+];
+
+exports.validateEmail = [
+    check('email')
+        .normalizeEmail()
+        .isEmail()
+        .withMessage('Email inválido')
+]
 
 exports.validateUserSignIn = [
     check('email')

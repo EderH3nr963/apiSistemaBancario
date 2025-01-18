@@ -1,122 +1,144 @@
 const User = require('../models/userModel');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const sendEmail = require('../lib/sendEmail')
+const sendEmail = require('../lib/sendEmail');
 const redisClient = require('../config/redisDB');
+
+const CODE_EXPIRATION_TIME = 15 * 60 * 1000; // 15 minutos
+const RESEND_LIMIT_TIME = 60 * 1000; // 60 segundos
 
 const serviceLogin = async (email, password) => {
     try {
-        const user = await User.findOne({ email: email }); // Procura um usuário com email igual ao definido
-        if (!user) return { success: false, menssagem: "Email ou senha inválido" }
+        const user = await User.findOne({ email: email });
+        if (!user) return { success: false, statusCode: 401, mensagem: "Email ou senha inválido" };
 
-        const verifyPasswd = await user.comparePassword(password); // Compara a senha com a hash
-        if (!verifyPasswd) return { success: false, menssagem: "Email ou senha inválido" }
+        const verifyPasswd = await user.comparePassword(password);
+        if (!verifyPasswd) return { success: false, statusCode: 401, mensagem: "Email ou senha inválido" };
 
-        const token = jwt.sign({ data: user._id }, process.env.JWT_SECRET, { expiresIn: '48h' }); // Cria um token de login
-        return { success: true, menssagem: "Acesso autorizado", token: token }
+        const token = jwt.sign({ data: (user._id).toString }, process.env.JWT_SECRET, { expiresIn: '48h' });
+        return { success: true, statusCode: 200, mensagem: "Acesso autorizado", token: token };
     } catch (error) {
-        return { success: false, menssagem: "Erro interno no servidor: ".error.message }
+        return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message };
     }
-}
+};
 
-const serviceRegister = async (fullName, email, cpf, birthDay, password) => {
-    console.log(await User.isThisCpfInUse(cpf))
-    // Procura um usuário com email igual ao definido
-    if (!(await User.isThisEmailInUse(email))) return { success: false, menssagem: "Email já existente" }
+const serviceRegister = async (fullName, email, cpf, birthDay, password, code) => {
+    try {
+        await redisClient.connect();
 
-    // Procura um usuário com CPF igual ao definido
-    if (!(await User.isThisCpfInUse(cpf))) return { success: false, menssagem: "CPF já existente" }
+        // Verifica se o e-mail e CPF já estão em uso
+        if (!(await User.isThisEmailInUse(email))) {
+            return { success: false, statusCode: 409, mensagem: "Email já existente" };
+        }
+        if (!(await User.isThisCpfInUse(cpf))) {
+            return { success: false, statusCode: 409, mensagem: "CPF já existente" };
+        }
 
+        // Obtém dados do Redis para o código fornecido
+        const storedData = await redisClient.hGetAll(`verification:code:${code}`);
+        if (!storedData.email || !storedData.dateCode) {
+            return { success: false, statusCode: 410, mensagem: "Código de verificação expirado ou inválido" };
+        }
 
-    const user = await User({
-        fullName,
-        email,
-        cpf,
-        birthDay,
-        password
-    });
-    await user.save();
+        // Valida se o código pertence ao e-mail e está dentro do prazo
+        if (storedData.email !== email) {
+            return { success: false, statusCode: 400, mensagem: "Código não corresponde ao e-mail fornecido" };
+        }
 
-    return { success: true, menssagem: "Usuário cadastrado com sucesso" };
-}
+        const timeElapsed = Date.now() - parseInt(storedData.dateCode, 10);
+        if (timeElapsed > CODE_EXPIRATION_TIME) {
+            await redisClient.del(`verification:code:${code}`);
+            return { success: false, statusCode: 410, mensagem: "Código de verificação expirado" };
+        }
+
+        // Cria e salva o usuário
+        const user = new User({ fullName, email, cpf, birthDay, password });
+        await user.save();
+
+        // Remove o código de verificação após o uso
+        await redisClient.del(`verification:code:${code}`);
+
+        return { success: true, statusCode: 201, mensagem: "Usuário cadastrado com sucesso" };
+    } catch (error) {
+        return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message };
+    } finally {
+        redisClient.quit();
+    }
+};
 
 const serviceSendCodeVerification = async (email) => {
-
     try {
-        redisClient.connect();
-        
-        // Verifica se o código foi enviado recentemente
-        const dateCreated = await redisClient.get(email);
+        await redisClient.connect();
 
-        if (dateCreated) {
-            const today = Date.now(); // Data atual
-            const diff = today - dateCreated; // Diferença entre a data atual e a data de criação
-            
-            // Caso a requisição atual faça menos de 1 minuto da anterior
-            if (diff < 60 * 1000) {  // 60 segundos em milissegundos
-                return { success: false, menssagem: "Reenviar o código em " + (diff / 1000).toFixed(0) + " segundos" };
+        // Verifica o limite de reenvio
+        const lastSentTime = await redisClient.get(`verification:email:${email}`);
+        if (lastSentTime) {
+            const timeElapsed = Date.now() - parseInt(lastSentTime, 10);
+            if (timeElapsed < RESEND_LIMIT_TIME) {
+                return {
+                    success: false,
+                    statusCode: 429,
+                    mensagem: `Reenviar o código em ${(RESEND_LIMIT_TIME - timeElapsed) / 1000} segundos`,
+                };
             }
-            
-            // Caso contrário, remove o email da sessão
-            await (['DEL', email]);
         }
-        
-        // Gera um código entre 100000 e 999999
-        const code = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-        
-        const html = "Seu código de verificação é: <b>" + code + "</b>"; // Corpo HTML do email
-        
-        const responseSendEmail = await sendEmail(email, 'Código de verificação de usuário', html); // Envia o email com o código
-        if (!responseSendEmail) {
-            return { success: false, menssagem: "Erro ao enviar código de verificação" };
+
+        // Gera um código aleatório
+        const code = Math.floor(100000 + Math.random() * 900000);
+        const html = `Seu código de verificação é: <b>${code}</b>`;
+
+        // Envia o e-mail com o código de verificação
+        const emailSent = await sendEmail(email, 'Código de Verificação', html);
+        if (!emailSent) {
+            return { success: false, statusCode: 500, mensagem: "Erro ao enviar código de verificação" };
         }
-        
-        // Armazena o código e a data na sessão
-        await redisClient.hSet(code.toString(), { email: email, dateCode: Date.now() });
-        await redisClient.set(email, Date.now().toString()); // Atualiza a data de envio
-        
-        return { success: true, menssagem: "Código de verificação enviado com sucesso" };
+
+        // Armazena o código e a data de envio no Redis
+        await redisClient.hSet(`verification:code:${code}`, {
+            email,
+            dateCode: Date.now(),
+        });
+        await redisClient.set(`verification:email:${email}`, Date.now());
+
+        return { success: true, statusCode: 200, mensagem: "Código de verificação enviado com sucesso" };
     } catch (error) {
-        return { success: false, menssagem: "Erro interno no servidor" };
+        return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message };
     } finally {
         redisClient.quit();
     }
-}
+};
 
-const serviceVerifyCode = async (code) => {
-    redisClient.connect();
+const emailInNotUseService = async (email) => {
     try {
-        
-        // Recupera os dados do código da sessão
-        const storedData = await redisClient.hGetAll(code.toString());
-        
-        if (!storedData) {
-            return { success: false, menssagem: "Código de verificação expirado" };
+        const responseDB = await User.isThisEmailInUse(email); // Verifica se o email está em uso
+        if (responseDB === false) {
+            return { success: false, statusCode: 409, mensagem: "Este e-mail já está em uso" };
         }
-        
-        const { email, dateCode } = JSON.parse(storedData); // Converte de volta o JSON para objeto
-        
-        // Verifica se o código ainda existe na sessão
-        if (!dateCode || !email) {
-            return { success: false, menssagem: "Código de verificação expirado" };
-        }
-        
-        const today = Date.now();
-        const diff = today - dateCode;
-        
-        // Verifica se o código expirou (15 minutos)
-        if (diff > (15 * 60 * 1000)) { // 15 minutos em milissegundos
-            await redisClient.sendCommand(['HDEL', code.toString(), 'email', 'dateCode']);
-            return { success: false, menssagem: "Código de verificação expirado" };
-        }
-        
-        return { success: true, email: email, menssagem: "Email verificado com sucesso" };
-    } catch (error) {
-        return { success: false, menssagem: "Erro interno no servidor" };
-    } finally {
-        redisClient.quit();
-    }
-}
 
-module.exports = { serviceLogin, serviceRegister, serviceSendCodeVerification, serviceVerifyCode }
+        return { success: true, statusCode: 200, mensagem: 'Email não está em uso' };
+    } catch {
+        return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
+    }
+};
+
+const cpfInNotUseService = async (cpf) => {
+    try {
+        const responseDB = await User.isThisCpfInUse(cpf); // verifica se o cpf está em uso
+        if (responseDB === false) {
+            return { success: false, statusCode: 409, mensagem: "Este CPF já está em uso" };
+        }
+
+        return { success: true, statusCode: 200, mensagem: 'CPF não está em uso' };
+    } catch {
+        return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
+    }
+};
+
+module.exports = {
+    serviceLogin,
+    serviceRegister,
+    serviceSendCodeVerification,
+    emailInNotUseService,
+    cpfInNotUseService
+};
