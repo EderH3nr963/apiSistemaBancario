@@ -12,7 +12,12 @@ const userSchema = new mongoose.Schema({
     },
     cpf: {
         type: String,
-        required: true
+        required: true,
+    },
+    saldo: {
+        type: Double,
+        default: 0,
+        required: false
     },
     birthDay: {
         type: Date,

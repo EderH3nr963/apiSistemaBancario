@@ -17,6 +17,7 @@ const userRegister = async (req, res) => {
 }
 
 const sendCodeVerification = async (req, res) => {
+    console.log('ola')
     const { email } = req.body;
     
     const response = await UserService.serviceSendCodeVerification(email);

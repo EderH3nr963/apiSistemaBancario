@@ -1,5 +1,6 @@
 const express = require('express');
 const userController = require('../controller/userController');
+const transacaoController = require('../controller/transacaoController');
 const { validateAuth } = require('../middleware/validateAuth');
 const { validateUserSignUp, validateUserSignIn, validateUser, validateCpf, validateEmail } = require('../middleware/authUser');
 
@@ -12,5 +13,8 @@ router.post('/send-code-verification', userController.sendCodeVerification);
 router.post('/email-not-in-use', validateEmail, userController.emailNotInUse);
 router.post('/cpf-not-in-use', validateCpf, userController.cpfNotInUse);
 router.post('/verification-auth', validateAuth, (req, res) => res.status(200).json({ success: true, mensagem: "Token válido" }));
+
+// Serviços do usuário
+router.post('/send-transacao', validateAuth, transacaoController.sendTransacao);
 
 module.exports = router;
