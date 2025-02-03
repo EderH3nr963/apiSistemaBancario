@@ -1,7 +1,3 @@
-Aqui está um modelo de **README** para a sua API de Sistema Bancário:
-
----
-
 # Sistema Bancário API
 
 A API do **Sistema Bancário** permite a realização de transações entre usuários, com funcionalidades como: autenticação, registro de usuário, consulta de transações realizadas e envio de valores entre contas.
