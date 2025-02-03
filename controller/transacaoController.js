@@ -9,12 +9,21 @@ const setTransacao = async (req, res) => {
     res.status(response.statusCode).json(response);
 }
 
-const getAllTransacao = async () => {
+const getAllTransacao = async (req, res) => {
     const idUser = req.user;
     
     response = await transacaoService.serviceGetAllTransacao(idUser);
-
+    
     res.status(response.statusCode).json(response);
 }
 
-module.exports = { setTransacao, getAllTransacao };
+const getTransacao = async (req, res) => {
+    const idUser = req.user;
+    const { idTransacao } = req.body;
+    
+    response = await transacaoService.serviceGetTransacao(idUser, idTransacao);
+    
+    res.status(response.statusCode).json(response);
+}
+
+module.exports = { setTransacao, getAllTransacao, getTransacao };

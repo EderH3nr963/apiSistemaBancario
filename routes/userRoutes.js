@@ -17,5 +17,6 @@ router.post('/verification-auth', validateAuth, (req, res) => res.status(200).js
 // Serviços do usuário
 router.post('/set-transacao', validateAuth, transacaoController.setTransacao);
 router.get('/get-all-transacao', validateAuth, transacaoController.getAllTransacao);
+router.get('/get-transacao', validateAuth, transacaoController.getTransacao);
 
 module.exports = router;
