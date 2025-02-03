@@ -73,7 +73,6 @@ const serviceGetAllTransacao = async (id) => {
             transacoes: [...transacoesEnviadas, ...transacoesRecebidas] 
         };
     } catch (e) {
-        console.error(e);
         return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
     }
 }

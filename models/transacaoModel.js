@@ -11,11 +11,11 @@ const transacaoSchema = new mongoose.Schema({
         required: true
     },
     valor: {
-        type: Double,
+        type: Number,
         required: true,
     },
     mensagem: {
-        type: Text,
+        type: String,
         required: false,
     },
     dataEnvio: {
