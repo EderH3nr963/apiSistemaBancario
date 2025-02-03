@@ -3,37 +3,32 @@ const User = require("../models/userModel");
 
 const serviceSetTransacao = async (idUserOrigem, cpfDestino, valor, mensagem = null) => {
     try {
-        // Carregar usuário de origem e de destino  
+        // Carregar usuários
         const userOrigem = await User.findById(idUserOrigem);
         const userDestino = await User.findOne({ cpf: cpfDestino });
 
-        // Verifique se o valor é válido  
+        // Validações básicas
         if (valor < 1) {
             return { success: false, statusCode: 400, message: "O valor mínimo da transação é 1.00" };
         }
-
-        // Verifique se os usuários existem  
         if (!userOrigem) {
             return { success: false, statusCode: 404, message: "Usuário de origem inexistente" };
         }
-        
         if (!userDestino) {
             return { success: false, statusCode: 404, message: "Usuário de destino inexistente" };
         }
-        
-        // Verifique saldo suficiente  
         if (valor > userOrigem.saldo) {
             return { success: false, statusCode: 400, message: "Saldo insuficiente" };
         }
-        
-        // Atualizar saldo dos usuários  
+
+        // Atualizar saldos
         userDestino.saldo += valor;
         userOrigem.saldo -= valor;
-        
+
         await userDestino.save();
         await userOrigem.save();
-        
-        // Criar transação  
+
+        // Criar transação
         const novaTransacao = new Transacao({
             userOrigem: idUserOrigem,
             userDestino: userDestino._id,
@@ -41,9 +36,10 @@ const serviceSetTransacao = async (idUserOrigem, cpfDestino, valor, mensagem = n
             mensagem
         });
         await novaTransacao.save();
-        
+
         return { success: true, statusCode: 200, message: "Transação realizada com sucesso" };
     } catch (e) {
+        console.error(e);
         return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
     }
 };
@@ -53,25 +49,19 @@ const serviceGetAllTransacao = async (id) => {
         if (!id) {
             return { success: false, statusCode: 400, message: "ID do usuário é obrigatório" };
         }
-        
+
         const user = await User.findById(id);
         if (!user) {
             return { success: false, statusCode: 404, message: "Usuário inexistente" };
         }
-        
+
         const transacoesEnviadas = await Transacao.find({ userOrigem: id });
         const transacoesRecebidas = await Transacao.find({ userDestino: id });
-        
+
         if (transacoesEnviadas.length === 0 && transacoesRecebidas.length === 0) {
             return { success: true, statusCode: 200, message: "Você não realizou nem recebeu nenhuma transação", transacoes: [] };
         }
-        
-        return { 
-            success: true, 
-            statusCode: 200, 
-            message: "Transações resgatadas com sucesso", 
-            transacoes: [...transacoesEnviadas, ...transacoesRecebidas] 
-        };
+
         return { 
             success: true, 
             statusCode: 200, 
@@ -79,35 +69,44 @@ const serviceGetAllTransacao = async (id) => {
             transacoes: [...transacoesEnviadas, ...transacoesRecebidas] 
         };
     } catch (e) {
+        console.error(e);
         return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
     }
-}
+};
 
 const serviceGetTransacao = async (idUser, idTransacao) => {
     try {
-        if (!(await User.findOne({ idUser }))) {
+        // Verificar se o usuário existe
+        const user = await User.findById(idUser);
+        if (!user) {
             return { success: false, statusCode: 404, message: "Usuário inexistente" };
         }
-        
+
+        // Buscar a transação
         const transacao = await Transacao.findById(idTransacao);
-        
-        if (transacao.userOrigem != idUser && transacao.userDestino != idUser) {
+        if (!transacao) {
+            return { success: false, statusCode: 404, message: "Transação não encontrada" };
+        }
+
+        // Verificar se o usuário tem permissão para acessar
+        if (transacao.userOrigem.toString() !== idUser && transacao.userDestino.toString() !== idUser) {
             return { 
                 success: false, 
-                statusCode: 503, 
-                message: "Você não pode ter acesso a transacao que você não foi o remetente ou destinatário" 
+                statusCode: 403, // Código correto para acesso negado
+                message: "Você não pode acessar essa transação" 
             };
         }
-        
+
         return { 
             success: true, 
             statusCode: 200, 
             message: "Transação resgatada com sucesso", 
-            transacao: transacao 
+            transacao 
         };
     } catch (e) {
+        console.error(e);
         return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
     }
-}
+};
 
 module.exports = { serviceSetTransacao, serviceGetAllTransacao, serviceGetTransacao };
