@@ -15,6 +15,7 @@ router.post('/cpf-not-in-use', validateCpf, userController.cpfNotInUse);
 router.post('/verification-auth', validateAuth, (req, res) => res.status(200).json({ success: true, mensagem: "Token válido" }));
 
 // Serviços do usuário
-router.post('/send-transacao', validateAuth, transacaoController.sendTransacao);
+router.post('/set-transacao', validateAuth, transacaoController.setTransacao);
+router.get('/get-all-transacao', validateAuth, transacaoController.getAllTransacao);
 
 module.exports = router;

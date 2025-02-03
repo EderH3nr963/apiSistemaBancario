@@ -1,12 +1,20 @@
 const transacaoService = require('../service/transacaoService');
 
-const sendTransacao = (req, res) => {
+const setTransacao = async (req, res) => {
     const idUserOrigem = req.user;
     const { cpfDestino, valor, mensagem } = req.body;
 
-    response = transacaoService.serviceSendTransacao(idUserOrigem, cpfDestino, valor, !mensagem);
+    response = await transacaoService.serviceSetTransacao(idUserOrigem, cpfDestino, valor, !mensagem);
 
     res.status(response.statusCode).json(response);
 }
 
-module.exports = { sendTransacao };
+const getAllTransacao = async () => {
+    const idUser = req.user;
+    
+    response = await transacaoService.serviceGetAllTransacao(idUser);
+
+    res.status(response.statusCode).json(response);
+}
+
+module.exports = { setTransacao, getAllTransacao };
