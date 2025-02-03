@@ -4,8 +4,10 @@ const User = require("../models/userModel");
 const serviceSetTransacao = async (idUserOrigem, cpfDestino, valor, mensagem = null) => {
     try {
         // Carregar usuários
-        const userOrigem = await User.findById(idUserOrigem);
-        const userDestino = await User.findOne({ cpf: cpfDestino });
+        const [userOrigem, userDestino] = await Promise.all([
+            User.findById(idUserOrigem).session(session),
+            User.findOne({ cpf: cpfDestino.replace(/\D/g, "") }).session(session) // Remove pontuação do CPF
+        ]);
 
         // Validações básicas
         if (valor < 1) {
@@ -22,11 +24,8 @@ const serviceSetTransacao = async (idUserOrigem, cpfDestino, valor, mensagem = n
         }
 
         // Atualizar saldos
-        userDestino.saldo += valor;
-        userOrigem.saldo -= valor;
-
-        await userDestino.save();
-        await userOrigem.save();
+        await User.updateOne({ _id: userOrigem._id }, { $inc: { saldo: -valor } });
+        await User.updateOne({ _id: userDestino._id }, { $inc: { saldo: valor } });
 
         // Criar transação
         const novaTransacao = new Transacao({
@@ -62,11 +61,11 @@ const serviceGetAllTransacao = async (id) => {
             return { success: true, statusCode: 200, message: "Você não realizou nem recebeu nenhuma transação", transacoes: [] };
         }
 
-        return { 
-            success: true, 
-            statusCode: 200, 
-            message: "Transações resgatadas com sucesso", 
-            transacoes: [...transacoesEnviadas, ...transacoesRecebidas] 
+        return {
+            success: true,
+            statusCode: 200,
+            message: "Transações resgatadas com sucesso",
+            transacoes: [...transacoesEnviadas, ...transacoesRecebidas]
         };
     } catch (e) {
         console.error(e);
@@ -90,18 +89,18 @@ const serviceGetTransacao = async (idUser, idTransacao) => {
 
         // Verificar se o usuário tem permissão para acessar
         if (transacao.userOrigem.toString() !== idUser && transacao.userDestino.toString() !== idUser) {
-            return { 
-                success: false, 
+            return {
+                success: false,
                 statusCode: 403, // Código correto para acesso negado
-                message: "Você não pode acessar essa transação" 
+                message: "Você não pode acessar essa transação"
             };
         }
 
-        return { 
-            success: true, 
-            statusCode: 200, 
-            message: "Transação resgatada com sucesso", 
-            transacao 
+        return {
+            success: true,
+            statusCode: 200,
+            message: "Transação resgatada com sucesso",
+            transacao
         };
     } catch (e) {
         console.error(e);
