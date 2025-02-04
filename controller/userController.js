@@ -34,10 +34,10 @@ const emailNotInUse = async (req, res) => {
 }
 
 const updatePassword = async (req, res) => {
-    const { password, confirmPassword } = req.body;
+    const { password } = req.body;
     const idUser = req.user;
 
-    const response = null;
+    const response = await UserService.serviceLogin.updatePassword(idUser, password);
 
     res.status(response.statusCode).json(response)
 }

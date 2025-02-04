@@ -13,9 +13,9 @@ router.post('/send-code-verification', userController.sendCodeVerification);
 router.post('/email-not-in-use', validateEmail, userController.emailNotInUse);
 router.post('/cpf-not-in-use', validateCpf, userController.cpfNotInUse);
 router.post('/verification-auth', validateAuth, (req, res) => res.status(200).json({ success: true, mensagem: "Token válido" }));
-router.post('/update-password', validatePassword, validateUser, userController.updatePassword);
 
 // Serviços do usuário
+router.update('/update-password', validatePassword, validateUser, userController.updatePassword);
 router.post('/set-transacao', validateAuth, transacaoController.setTransacao);
 router.get('/get-all-transacao', validateAuth, transacaoController.getAllTransacao);
 router.get('/get-transacao', validateAuth, transacaoController.getTransacao);

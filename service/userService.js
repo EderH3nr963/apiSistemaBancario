@@ -16,7 +16,7 @@ const serviceLogin = async (email, password) => {
         const verifyPasswd = await user.comparePassword(password);
         if (!verifyPasswd) return { success: false, statusCode: 401, mensagem: "Email ou senha inválido" };
 
-        const token = jwt.sign({ data: (user._id).toString }, process.env.JWT_SECRET, { expiresIn: '48h' });
+        const token = jwt.sign({ data: user._id.toString }, process.env.JWT_SECRET, { expiresIn: '48h' });
         return { success: true, statusCode: 200, mensagem: "Acesso autorizado", token: token };
     } catch (error) {
         return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message };
@@ -122,6 +122,16 @@ const emailInNotUseService = async (email) => {
     }
 };
 
+const serviceUpdatePassword = async (idUser, password) => {
+    try {
+        const hashPassword = await bcrypt.hash(password, 10); // 10 é o saltRounds
+
+        await User.updateOne({ _id : idUser}, { $set : hashPassword});
+    } catch (e) {
+        return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
+    }
+}
+
 const cpfInNotUseService = async (cpf) => {
     try {
         const responseDB = await User.isThisCpfInUse(cpf); // verifica se o cpf está em uso
@@ -140,5 +150,6 @@ module.exports = {
     serviceRegister,
     serviceSendCodeVerification,
     emailInNotUseService,
-    cpfInNotUseService
+    cpfInNotUseService,
+    serviceUpdatePassword
 };

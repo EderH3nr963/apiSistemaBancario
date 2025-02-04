@@ -67,6 +67,18 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Status indicando se o e-mail está em uso.
 
+- **UPDATE** `/update-password`
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Descrição**: Altera a senha de acesso do usuário.
+  - **Body**:
+    ```json
+    {
+      "password": "password123",
+      "confirmPassword": "password123"
+    }
+    ```
+  - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
+
 - **POST** `/cpf-not-in-use`
   - **Descrição**: Verifica se um CPF já está cadastrado.
   - **Body**:
