@@ -38,14 +38,14 @@ exports.validateUserSignUp = [
         .custom((value) => {
             // Tenta converter o valor para uma instância de Date
             const date = new Date(value);
-        
+
             // Verifica se a data é válida
             if (isNaN(date.getTime())) {
                 throw new Error('A data deve ser válida e no formato esperado!');
             }
-        
+
             return true;
-        })            
+        })
         .custom((value) => {
             // Normaliza a data para o formato yyyy-mm-dd
             let dateParts;
@@ -94,6 +94,27 @@ exports.validateUserSignUp = [
         .withMessage('A senha é obrigatória!')
         .isLength({ min: 8, max: 20 })
         .withMessage('A senha deve ter entre 8 e 20 caracteres!'),
+    check('confirmPassword')
+        .trim()
+        .not()
+        .isEmpty()
+        .withMessage('A confirmação da senha é obrigatória!')
+        .custom((value, { req }) => {
+            if (value !== req.body.password) {
+                throw new Error('As senhas precisam ser iguais!');
+            }
+            return true;
+        }),
+];
+
+exports.validatePasswordEConfirmPass = [
+    check('password')
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage('A senha é obrigatória!')
+    .isLength({ min: 8, max: 20 })
+    .withMessage('A senha deve ter entre 8 e 20 caracteres!'),
     check('confirmPassword')
         .trim()
         .not()

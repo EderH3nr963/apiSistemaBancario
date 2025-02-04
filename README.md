@@ -72,7 +72,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
   - **Body**:
     ```json
     {
-      "cpf": "12345678901"
+      "cpf": "123.456.789-01"
     }
     ```
   - **Resposta**: Status indicando se o CPF está em uso.

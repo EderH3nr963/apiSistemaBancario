@@ -33,6 +33,15 @@ const emailNotInUse = async (req, res) => {
     res.status(response.statusCode).json(response)
 }
 
+const updatePassword = async (req, res) => {
+    const { password, confirmPassword } = req.body;
+    const idUser = req.user;
+
+    const response = null;
+
+    res.status(response.statusCode).json(response)
+}
+
 const cpfNotInUse = async (req, res) => {
     const { cpf } = req.body;
 
@@ -41,4 +50,4 @@ const cpfNotInUse = async (req, res) => {
     res.status(response.statusCode).json(response)
 }
 
-module.exports = { userLogin, userRegister, sendCodeVerification, emailNotInUse, cpfNotInUse };
+module.exports = { userLogin, userRegister, sendCodeVerification, emailNotInUse, cpfNotInUse, updatePassword };
