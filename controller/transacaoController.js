@@ -1,7 +1,7 @@
 const transacaoService = require('../service/transacaoService');
 
 const setTransacao = async (req, res) => {
-    const idUserOrigem = req.user;
+    const idUserOrigem = req.idUser;
     const { cpfDestino, valor, mensagem } = req.body;
 
     response = await transacaoService.serviceSetTransacao(idUserOrigem, cpfDestino, valor, !mensagem);
@@ -10,7 +10,7 @@ const setTransacao = async (req, res) => {
 }
 
 const getAllTransacao = async (req, res) => {
-    const idUser = req.user;
+    const idUser = req.idUser;
     
     response = await transacaoService.serviceGetAllTransacao(idUser);
     
@@ -18,8 +18,8 @@ const getAllTransacao = async (req, res) => {
 }
 
 const getTransacao = async (req, res) => {
-    const idUser = req.user;
-    const { idTransacao } = req.body;
+    const idUser = req.idUser;
+    const idTransacao = req.param.idTransacao;
     
     response = await transacaoService.serviceGetTransacao(idUser, idTransacao);
     

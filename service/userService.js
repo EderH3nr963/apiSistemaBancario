@@ -1,11 +1,11 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+
 const sendEmail = require('../lib/sendEmail');
+const verificationCode = require('../lib/verificationCode');
 const redisClient = require('../config/redisDB');
 
-const CODE_EXPIRATION_TIME = 15 * 60 * 1000; // 15 minutos
 const RESEND_LIMIT_TIME = 60 * 1000; // 60 segundos
 
 const serviceLogin = async (email, password) => {
@@ -16,7 +16,7 @@ const serviceLogin = async (email, password) => {
         const verifyPasswd = await user.comparePassword(password);
         if (!verifyPasswd) return { success: false, statusCode: 401, mensagem: "Email ou senha inválido" };
 
-        const token = jwt.sign({ data: user._id.toString }, process.env.JWT_SECRET, { expiresIn: '48h' });
+        const token = jwt.sign({ data: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '48h' });
         return { success: true, statusCode: 200, mensagem: "Acesso autorizado", token: token };
     } catch (error) {
         return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message };
@@ -35,21 +35,9 @@ const serviceRegister = async (fullName, email, cpf, birthDay, password, code) =
             return { success: false, statusCode: 409, mensagem: "CPF já existente" };
         }
 
-        // Obtém dados do Redis para o código fornecido
-        const storedData = await redisClient.hGetAll(`verification:code:${code}`);
-        if (!storedData.email || !storedData.dateCode) {
-            return { success: false, statusCode: 410, mensagem: "Código de verificação expirado ou inválido" };
-        }
-
-        // Valida se o código pertence ao e-mail e está dentro do prazo
-        if (storedData.email !== email) {
-            return { success: false, statusCode: 400, mensagem: "Código não corresponde ao e-mail fornecido" };
-        }
-
-        const timeElapsed = Date.now() - parseInt(storedData.dateCode, 10);
-        if (timeElapsed > CODE_EXPIRATION_TIME) {
-            await redisClient.del(`verification:code:${code}`);
-            return { success: false, statusCode: 410, mensagem: "Código de verificação expirado" };
+        const response = await verificationCode(code, email);
+        if (!response.success) {
+            return response;
         }
 
         // Cria e salva o usuário
@@ -70,7 +58,7 @@ const serviceRegister = async (fullName, email, cpf, birthDay, password, code) =
 const serviceSendCodeVerification = async (email) => {
     try {
         await redisClient.connect();
-
+        console.log(email)
         // Verifica o limite de reenvio
         const lastSentTime = await redisClient.get(`verification:email:${email}`);
         if (lastSentTime) {
@@ -122,15 +110,53 @@ const emailInNotUseService = async (email) => {
     }
 };
 
-const serviceUpdatePassword = async (idUser, password) => {
+const serviceUpdatePassword = async (email, password, code) => {
     try {
-        const hashPassword = await bcrypt.hash(password, 10); // 10 é o saltRounds
+        await redisClient.connect();
+        const user = await User.findOne({ email: email });
+        if (!user) {
+            return { success: false, statusCode: 404, mensagem: "Usuário não encontrado" };
+        }
+        const response = await verificationCode(code, user.email);
+        if (!response.success) {
+            return response;
+        }
 
-        await User.updateOne({ _id : idUser}, { $set : hashPassword});
+        const hashPassword = await bcrypt.hash(password, 10);
+        await User.updateOne({ email: email }, { $set: { password: hashPassword } });
+        
+        await redisClient.del(`verification:code:${code}`);
+
+        return { success: true, statusCode: 200, mensagem: "Senha atualizada com sucesso!" };
+    } catch (e) {
+        console.log(e);
+        return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
+    }
+};
+
+const serviceUpdateEmail = async (idUser, email, code) => {
+    try {
+        await redisClient.connect();
+        const user = await User.findById(idUser);
+        if (!user) {
+            return { success: false, statusCode: 404, mensagem: "Usuário não encontrado" };
+        }
+
+        const response = await verificationCode(code, email);
+        if (!response.success) {
+            return response;
+        }
+
+        await User.updateOne({ _id: idUser }, { $set: { email } });
+
+        await redisClient.del(`verification:code:${code}`);
+
+        return { success: true, statusCode: 200, mensagem: "E-mail atualizado com sucesso!" };
     } catch (e) {
         return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
     }
-}
+};
+
 
 const cpfInNotUseService = async (cpf) => {
     try {
@@ -151,5 +177,6 @@ module.exports = {
     serviceSendCodeVerification,
     emailInNotUseService,
     cpfInNotUseService,
-    serviceUpdatePassword
+    serviceUpdatePassword,
+    serviceUpdateEmail
 };

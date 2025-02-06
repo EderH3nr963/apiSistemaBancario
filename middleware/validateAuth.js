@@ -15,9 +15,9 @@ exports.validateAuth = (req, res, next) => {
                 return res.status(401).json({ success: false, mensagem: "Token inválido ou expirado" });
             }
 
+            console.log(decoded)
             // Se o token for válido, você pode passar os dados do usuário decodificados para a requisição
-            req.user = decoded.data;  // Aqui estamos assumindo que o id do usuário está no "data" do payload
-
+            req.idUser = decoded.data ;  // Aqui estamos assumindo que o id do usuário está no "data" do payload
             // Chama o próximo middleware
             next();
         });

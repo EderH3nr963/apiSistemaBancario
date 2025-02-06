@@ -17,7 +17,6 @@ const userRegister = async (req, res) => {
 }
 
 const sendCodeVerification = async (req, res) => {
-    console.log('ola')
     const { email } = req.body;
     
     const response = await UserService.serviceSendCodeVerification(email);
@@ -34,10 +33,19 @@ const emailNotInUse = async (req, res) => {
 }
 
 const updatePassword = async (req, res) => {
-    const { password } = req.body;
-    const idUser = req.user;
+    const { password, code, email } = req.body;
 
-    const response = await UserService.serviceLogin.updatePassword(idUser, password);
+    const response = await UserService.serviceUpdatePassword(email, password, code);
+
+    res.status(response.statusCode).json(response)
+}
+
+const updateEmail = async (req, res) => {
+    const { email /* Email novo */, code } = req.body;
+    const idUser = req.idUser;
+    console.log(req.idUser)
+
+    const response = await UserService.serviceUpdateEmail(idUser, email, code);
 
     res.status(response.statusCode).json(response)
 }
@@ -50,4 +58,4 @@ const cpfNotInUse = async (req, res) => {
     res.status(response.statusCode).json(response)
 }
 
-module.exports = { userLogin, userRegister, sendCodeVerification, emailNotInUse, cpfNotInUse, updatePassword };
+module.exports = { userLogin, userRegister, sendCodeVerification, emailNotInUse, cpfNotInUse, updatePassword, updateEmail };

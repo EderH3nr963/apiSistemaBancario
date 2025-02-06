@@ -1,6 +1,6 @@
 # Sistema Bancário API
 
-A API do **Sistema Bancário** permite a realização de transações entre usuários, com funcionalidades como: autenticação, registro de usuário, consulta de transações realizadas e envio de valores entre contas.
+A API do **Sistema Bancário** permite a realização de transações entre usuários, com funcionalidades como: autenticação, registro de usuário, consulta de transações realizadas e envio de valores entre contas, simulação de compra de cripto moedas com valores convertidos em tempo real, login com dados biométricos.
 
 ## Tecnologias
 
@@ -16,7 +16,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
 
 ### **Autenticação**
 
-- **POST** `/sign-in`
+- **POST** `profile/sign-in`
   - **Descrição**: Realiza o login de um usuário.
   - **Body**:
     ```json
@@ -27,7 +27,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Retorna um token JWT.
   
-- **POST** `/sign-up`
+- **POST** `profile/sign-up`
   - **Descrição**: Realiza o cadastro de um novo usuário.
   - **Body**:
     ```json
@@ -40,14 +40,14 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Confirmação de cadastro com status 201.
 
-- **POST** `/verification-auth`
+- **POST** `profile/verification-auth`
   - **Descrição**: Verifica a validade do token JWT.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Status 200 se o token for válido.
 
 ### **Usuários**
 
-- **POST** `/send-code-verification`
+- **POST** `profile/send-code-verification`
   - **Descrição**: Envia um código de verificação para o e-mail do usuário.
   - **Body**:
     ```json
@@ -57,7 +57,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Código de verificação enviado.
 
-- **POST** `/email-not-in-use`
+- **POST** `profile/email-not-in-use`
   - **Descrição**: Verifica se um e-mail já está sendo usado.
   - **Body**:
     ```json
@@ -67,7 +67,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Status indicando se o e-mail está em uso.
 
-- **UPDATE** `/update-password`
+- **UPDATE** `profile/update-password`
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Descrição**: Altera a senha de acesso do usuário.
   - **Body**:
@@ -79,7 +79,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
 
-- **POST** `/cpf-not-in-use`
+- **POST** `profile/cpf-not-in-use`
   - **Descrição**: Verifica se um CPF já está cadastrado.
   - **Body**:
     ```json
@@ -91,7 +91,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
 
 ### **Transações**
 
-- **POST** `/set-transacao`
+- **POST** `profile/set-transacao`
   - **Descrição**: Realiza uma transação de valor entre dois usuários.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Body**:
@@ -104,12 +104,12 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Status da transação (sucesso ou falha).
 
-- **GET** `/get-all-transacao`
+- **GET** `profile/get-all-transacao`
   - **Descrição**: Retorna todas as transações realizadas pelo usuário autenticado.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Lista de transações enviadas e recebidas.
 
-- **GET** `/get-transacao/{idTransacao}`
+- **GET** `profile/get-transacao/{idTransacao}`
   - **Descrição**: Retorna detalhes de uma transação específica.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Detalhes da transação.
