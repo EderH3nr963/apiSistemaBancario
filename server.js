@@ -11,6 +11,6 @@ const app = express();
 app.use(express.json());
 
 // Rotas de usuário
-app.use('/profile', userRoutes);
+app.use('/api/profile', userRoutes);
 
 app.listen(5000);

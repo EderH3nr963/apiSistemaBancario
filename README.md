@@ -163,7 +163,7 @@ O servidor estará disponível em `http://localhost:3000`.
 
 1. **Login:**
 
-   **POST** `http://localhost:3000/sign-in`
+   **POST** `http://localhost:3000/api/profile/sign-in`
    ```json
    {
      "email": "usuario@exemplo.com",
@@ -182,7 +182,7 @@ O servidor estará disponível em `http://localhost:3000`.
 
 2. **Registrar Usuário:**
 
-   **POST** `http://localhost:3000/sign-up`
+   **POST** `http://localhost:3000/api/profile/sign-up`
    ```json
    {
       "fullName": "João Silva",
@@ -204,7 +204,7 @@ O servidor estará disponível em `http://localhost:3000`.
 
 3. **Realizar Transação:**
 
-   **POST** `http://localhost:3000/set-transacao`
+   **POST** `http://localhost:3000/api/profile/set-transacao`
    - **Cabeçalho**: `Authorization: Bearer {JWT_TOKEN}`
    - **Body**:
    ```json
