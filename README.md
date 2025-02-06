@@ -225,8 +225,3 @@ O servidor estará disponível em `http://localhost:3000`.
 
 ---
 
-## Contribuindo
-
-Se você quiser contribuir com melhorias para essa API, fique à vontade para fazer um **fork** do repositório, criar uma branch e enviar um **pull request**.
-
----
