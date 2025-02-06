@@ -32,10 +32,12 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
   - **Body**:
     ```json
     {
-      "nome": "João Silva",
+      "fullName": "João Silva",
       "email": "joao.silva@exemplo.com",
       "senha": "senha123",
-      "cpf": "12345678901"
+      "confirmSenha": "senha123",
+      "cpf": "12345678901",
+      "code": 000000
     }
     ```
   - **Resposta**: Confirmação de cadastro com status 201.
@@ -74,7 +76,8 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```json
     {
       "password": "password123",
-      "confirmPassword": "password123"
+      "confirmPassword": "password123",
+      "code": 000000
     }
     ```
   - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
@@ -182,11 +185,13 @@ O servidor estará disponível em `http://localhost:3000`.
    **POST** `http://localhost:3000/sign-up`
    ```json
    {
-     "nome": "João Silva",
-     "email": "joao.silva@exemplo.com",
-     "senha": "senha123",
-     "cpf": "12345678901"
-   }
+      "fullName": "João Silva",
+      "email": "joao.silva@exemplo.com",
+      "senha": "senha123",
+      "confirmSenha": "senha123",
+      "cpf": "12345678901",
+      "code": 000000
+    }
    ```
    **Resposta**:
    ```json

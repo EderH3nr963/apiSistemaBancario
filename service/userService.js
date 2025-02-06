@@ -171,6 +171,20 @@ const cpfInNotUseService = async (cpf) => {
     }
 };
 
+const serviceGetUser = async (id) => {
+    try {
+        const user = await User.findById(id);
+        console.log(user.user)
+        return { success: true, statusCode: 200, mensagem: 'Usuário resgatado com sucesso', campos: {
+            email: user.email,
+            saldo: user.saldo,
+            fullName: user.fullName
+        }};
+    } catch (e) {
+        return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
+    }
+}
+
 module.exports = {
     serviceLogin,
     serviceRegister,
@@ -178,5 +192,6 @@ module.exports = {
     emailInNotUseService,
     cpfInNotUseService,
     serviceUpdatePassword,
-    serviceUpdateEmail
+    serviceUpdateEmail,
+    serviceGetUser
 };

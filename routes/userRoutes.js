@@ -17,6 +17,7 @@ router.post('/verification-auth', validateAuth, (req, res) => res.status(200).js
 // Atualização de dados
 router.patch('/update-password', validatePasswordEConfirmPass, validateUser, userController.updatePassword);
 router.patch('/update-email', validateAuth, userController.updateEmail);
+router.get('/get-user', validateAuth, userController.getUser);
 
 // Serviços do usuário
 router.post('/set-transacao', validateAuth, transacaoController.setTransacao);
