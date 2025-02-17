@@ -103,9 +103,42 @@ const serviceGetTransacao = async (idUser, idTransacao) => {
             transacao
         };
     } catch (e) {
-        console.error(e);
         return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
     }
 };
 
-module.exports = { serviceSetTransacao, serviceGetAllTransacao, serviceGetTransacao };
+const serviceDeposit = async (idUser, valor) => {
+    try {
+        
+        user = await User.findById(idUser);
+
+        if (!user) {
+            return { success: false, statusCode: 404, message: "Usuário inexistente" };
+        }
+
+        await User.updateOne({ _id: user._id }, { $inc: { saldo: valor } });
+
+        return { success: true, statusCode: 200, message: "Depósito realizado com sucesso" };
+    } catch (e) {
+        return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
+    }
+};
+
+const serviceWithdraw = async (idUser, valor) => { 
+    try {
+        user = await User.findById(idUser);
+
+        if (!user) {
+            return { success: false, statusCode: 404, message: "Usuário inexistente" };
+        }
+
+        await User.updateOne({ _id: user._id }, { $inc: { saldo: -valor } });
+
+        return { success: true, statusCode: 200, message: "Depósito realizado com sucesso" };
+    } catch (e) {
+        return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
+    }
+
+}
+
+module.exports = { serviceSetTransacao, serviceGetAllTransacao, serviceGetTransacao, serviceDeposit, serviceWithdraw};

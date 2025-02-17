@@ -1,6 +1,6 @@
 const transacaoService = require('../service/transacaoService');
 
-const setTransacao = async (req, res) => {
+const transfer = async (req, res) => {
     const idUserOrigem = req.idUser;
     const { cpfDestino, valor, mensagem } = req.body;
 
@@ -26,4 +26,22 @@ const getTransacao = async (req, res) => {
     res.status(response.statusCode).json(response);
 }
 
-module.exports = { setTransacao, getAllTransacao, getTransacao };
+const deposit = async (req, res) => {
+    const idUser = req.idUser;
+    const { valor } = req.body;
+
+    response = await transacaoService.serviceDeposit(idUser, valor);
+    
+    res.status(response.statusCode).json(response);
+}
+
+const withdraw = async (req, res) => {
+    const idUser = req.idUser;
+    const { valor } = req.body;
+
+    response = await transacaoService.serviceWithdraw(idUser, valor);
+    
+    res.status(response.statusCode).json(response);
+}
+
+module.exports = { transfer, getAllTransacao, getTransacao, deposit, withdraw};

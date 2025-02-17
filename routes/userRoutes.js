@@ -1,6 +1,5 @@
 const express = require('express');
 const userController = require('../controller/userController');
-const transacaoController = require('../controller/transacaoController');
 const { validateAuth } = require('../middleware/validateAuth');
 const { validateUserSignUp, validateUserSignIn, validateUser, validateCpf, validateEmail, validatePasswordEConfirmPass } = require('../middleware/authUser');
 
@@ -18,10 +17,5 @@ router.post('/verification-auth', validateAuth, (req, res) => res.status(200).js
 router.patch('/update-password', validatePasswordEConfirmPass, validateUser, userController.updatePassword);
 router.patch('/update-email', validateAuth, userController.updateEmail);
 router.get('/get-user', validateAuth, userController.getUser);
-
-// Serviços do usuário
-router.post('/set-transacao', validateAuth, transacaoController.setTransacao);
-router.get('/get-all-transacao', validateAuth, transacaoController.getAllTransacao);
-router.get('/get-transacao/:idTransacao', validateAuth, transacaoController.getTransacao);
 
 module.exports = router;

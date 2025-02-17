@@ -94,7 +94,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
 
 ### **Transações**
 
-- **POST** `/api/profile/set-transacao`
+- **POST** `/api/transactions/transfer`
   - **Descrição**: Realiza uma transação de valor entre dois usuários.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Body**:
@@ -107,12 +107,12 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Status da transação (sucesso ou falha).
 
-- **GET** `/api/profile/get-all-transacao`
-  - **Descrição**: Retorna todas as transações realizadas pelo usuário autenticado.
+- **GET** `/api/transactions/`
+  - **Descrição**: Retorna o histórico de transações realizadas pelo usuário autenticado.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Lista de transações enviadas e recebidas.
 
-- **GET** `/api/profile/get-transacao/{idTransacao}`
+- **GET** `/api/transactions/{idTransacao}`
   - **Descrição**: Retorna detalhes de uma transação específica.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Detalhes da transação.
@@ -145,6 +145,9 @@ Certifique-se de ter o **MongoDB** em execução ou utilize um banco de dados re
 ```
 MONGODB_URI=mongodb://localhost:27017/sistema-bancario
 JWT_SECRET=sua-chave-secreta
+
+NODE_MAILER_PASS=sua-chave-de-aplicação
+NODE_MAILER_EMAIL=example@example.com
 ```
 
 ### **Passo 4: Inicie o Servidor**
@@ -204,7 +207,7 @@ O servidor estará disponível em `http://localhost:3000`.
 
 3. **Realizar Transação:**
 
-   **POST** `http://localhost:3000/api/profile/set-transacao`
+   **POST** `http://localhost:3000/api/transactions/transfer`
    - **Cabeçalho**: `Authorization: Bearer {JWT_TOKEN}`
    - **Body**:
    ```json
