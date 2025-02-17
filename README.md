@@ -35,7 +35,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
       "fullName": "João Silva",
       "email": "joao.silva@exemplo.com",
       "senha": "senha123",
-      "confirmSenha": "senha123",
+      "confirmPassword": "senha123",
       "cpf": "12345678901",
       "code": 000000
     }
@@ -69,7 +69,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Status indicando se o e-mail está em uso.
 
-- **UPDATE** `/api/profile/update-password`
+- **PATCH** `/api/profile/update-password`
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Descrição**: Altera a senha de acesso do usuário.
   - **Body**:
@@ -81,6 +81,18 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     }
     ```
   - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
+
+- **PATCH** `/api/profile/update-password`
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Descrição**: Altera o email do usuário.
+  - **Body**:
+    ```json
+    {
+      "email": "example@example.com",
+      "code": 000000
+    }
+    ```
+  - **Resposta**: Satus 200 se a troca de email foi realizada com sucesso.
 
 - **POST** `/api/profile/cpf-not-in-use`
   - **Descrição**: Verifica se um CPF já está cadastrado.
@@ -107,7 +119,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Status da transação (sucesso ou falha).
 
-- **GET** `/api/transactions/`
+- **GET** `/api/transactions/history`
   - **Descrição**: Retorna o histórico de transações realizadas pelo usuário autenticado.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Lista de transações enviadas e recebidas.
@@ -117,6 +129,25 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Detalhes da transação.
 
+- **POST** `/api/transactions/deposit`
+  - **Descrição**: Realiza um deposito em sua conta bancária.
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Resposta**: Status de sucesso ou falha na requisição de depósito.
+  ```json
+    {
+      "valor": 150.00,
+    }
+    ```
+
+- **POST** `/api/transactions/withdraw`
+  - **Descrição**: Realiza um saque em sua conta bancária.
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Resposta**: Status de sucesso ou falha na requisição de saque.
+  ```json
+    {
+      "valor": 150.00,
+    }
+    ```
 ---
 
 ## Como Usar
