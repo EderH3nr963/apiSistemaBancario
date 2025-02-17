@@ -82,7 +82,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
 
-- **PATCH** `/api/profile/update-password`
+- **PATCH** `/api/profile/update-email`
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Descrição**: Altera o email do usuário.
   - **Body**:
