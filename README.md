@@ -118,6 +118,12 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     }
     ```
   - **Resposta**: Status da transação (sucesso ou falha).
+    ```json
+      {
+        "success": true,
+        "mesagem": "Sucesso ao realizar tranferência" 
+      }
+    ```
 
 - **GET** `/api/transactions/history`
   - **Descrição**: Retorna o histórico de transações realizadas pelo usuário autenticado.
@@ -128,6 +134,15 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
   - **Descrição**: Retorna detalhes de uma transação específica.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Detalhes da transação.
+  ```json
+    {
+      "userOrigem": "ID do Usuario de Origem",
+      "userDestino": "ID do Usuario Destino",
+      "valor": 150.00, 
+      "mensagem": "Pagamento de água",
+      "dataEnvio": "2011-10-10T14:48:00.000"
+    }
+  ```
 
 - **POST** `/api/transactions/deposit`
   - **Descrição**: Realiza um deposito em sua conta bancária.
