@@ -140,7 +140,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
       "userDestino": "ID do Usuario Destino",
       "valor": 150.00, 
       "mensagem": "Pagamento de água",
-      "dataEnvio": "2011-10-10T14:48:00.000"
+      "dataEnvio": "2011-10-10T00:00:00.000"
     }
   ```
 

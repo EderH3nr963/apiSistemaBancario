@@ -134,7 +134,7 @@ const serviceWithdraw = async (idUser, valor) => {
 
         await User.updateOne({ _id: user._id }, { $inc: { saldo: -valor } });
 
-        return { success: true, statusCode: 200, message: "Depósito realizado com sucesso" };
+        return { success: true, statusCode: 200, message: "Saque realizado com sucesso" };
     } catch (e) {
         return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
     }

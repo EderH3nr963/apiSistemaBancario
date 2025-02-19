@@ -1,13 +1,14 @@
 const express = require('express');
+const { validateAuth } = require('../middleware/validateAuth');
 const transacaoController = require('../controller/transacaoController');
 
 const router = express.Router();
 
 // Rotas de Transacao
-router.post('/transfer', validateAuth, transacaoController.transfer);
-router.get('/history', validateAuth, transacaoController.getAllTransacao);
-router.get('/:idTransacao', validateAuth, transacaoController.getTransacao);
-router.post('/deposit', validateAuth, transacaoController.deposit);
-router.post('/withdraw', validateAuth, transacaoController.withdraw);
+router.post('/transfer', transacaoController.transfer);
+router.get('/history', transacaoController.getAllTransacao);
+router.get('/:idTransacao', transacaoController.getTransacao);
+router.post('/deposit', transacaoController.deposit);
+router.post('/withdraw', transacaoController.withdraw);
 
 module.exports = router;

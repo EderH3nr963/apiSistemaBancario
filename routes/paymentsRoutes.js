@@ -1,10 +1,9 @@
 const express = require('express');
-
+const paymentsController = require("../controller/paymentsController");
 const router = express.Router();
 
-router.post('/bill') // Pagamento com boleto
-router.post('/qr-code') // Pagamento com QRcode
-router.post('/card') // Pagamento com Cartao
-router.get('/history') // Histórico de pagamentos
+router.post('/bill', paymentsController.bill) // Pagamento com boleto
+router.post('/qr-code', paymentsController.qrCode) // Pagamento com QRcode
+router.get('/history', paymentsController.history) // Histórico de pagamentos
 
 module.exports = router

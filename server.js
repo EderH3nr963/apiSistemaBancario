@@ -3,6 +3,7 @@ const express = require('express');
 const userRoutes = require('./routes/userRoutes');
 const transacaoRoutes = require('./routes/transacaoRoutes');
 const paymentsRoutes = require('./routes/paymentsRoutes');
+const { validateAuth } = require('./middleware/validateAuth');
 
 require('dotenv').config();
 require('./config/db');
@@ -14,7 +15,7 @@ app.use(express.json());
 
 // Rotas
 app.use('/api/profile', userRoutes);
-app.use('/api/transactions', transacaoRoutes);
-app.use('api/payments', paymentsRoutes);
+app.use('/api/transactions', validateAuth, transacaoRoutes);
+app.use('api/payments', validateAuth, paymentsRoutes);
 
 app.listen(5000);
