@@ -1,27 +1,45 @@
 const paymentsServices = require('../service/paymentsService');
 
-const bill = async (req, res) => {
-    const { numeroCodigoDeBarras } = req.body;
+const setPayment = async (req, res) => {
+    const { cpf, valor } = req.body;
+    const response = await paymentsServices.serviceSetPayment(cpf, valor);
 
-    const response = await paymentsServices.serviceBill();
+    return res.status(response.statusCode).json({ message: response.message, payment: response.payment });
+};
 
-    return res.status(response.statusCode).json(response);
-}
-
-const qrCode = async (req, res) => {
-    const { numeroCodigoDeBarras } = req.body;
-
-    const response = await paymentsServices.serviceQrCode();
-
-    return res.status(response.statusCode).json(response);
-}
-
-const history = async (req, res) => {
-    const { numeroCodigoDeBarras } = req.body;
+const getPayment = async (req, res) => {
+    const { id } = req.params;
+    const { userId } = req.idUser; 
     
-    const response = await paymentsServices.serviceHistory();
+    const response = await paymentsServices.serviceGetPayment(id, userId);
+
+    return res.status(response.statusCode).json({ message: response.message, payment: response.payment });
+};
+
+const getAllPayments = async (req, res) => {
+    const { userId } = req.user;
     
-    return res.status(response.statusCode).json(response);
+    const response = await paymentsServices.serviceGetAllPayments(userId);
+
+    return res.status(response.statusCode).json({ message: response.message, payments: response.payments });
+};
+
+const payPayment = async (req, res) => {
+    const { id } = req.params;
+    const { userId } = req.user; 
+    
+    const response = await paymentsServices.servicePayPayment(id, userId);
+    
+    return res.status(response.statusCode).json({ message: response.message, payment: response.payment });
 }
 
-module.exports = {bill, qrCode, history};
+const cancelPayment = async (req, res) => {
+    const { id } = req.params;
+    const { userId } = req.user; 
+    
+    const response = await paymentsServices.serviceCancelPayment(id, userId);
+
+    return res.status(response.statusCode).json({ message: response.message, payment: response.payment });
+};
+
+module.exports = { payPayment, setPayment, getPayment, getAllPayments, cancelPayment };

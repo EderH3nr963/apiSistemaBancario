@@ -47,8 +47,6 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Status 200 se o token for válido.
 
-### **Usuários**
-
 - **POST** `/api/profile/send-code-verification`
   - **Descrição**: Envia um código de verificação para o e-mail do usuário.
   - **Body**:
@@ -68,6 +66,32 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     }
     ```
   - **Resposta**: Status indicando se o e-mail está em uso.
+
+- **PATCH** `/api/profile/forgot-password`
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Descrição**: Altera a senha de acesso do usuário.
+  - **Body**:
+    ```json
+    {
+      "password": "password123",
+      "confirmPassword": "password123",
+      "code": 000000
+    }
+    ```
+  - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
+  
+
+- **POST** `/api/profile/cpf-not-in-use`
+  - **Descrição**: Verifica se um CPF já está cadastrado.
+  - **Body**:
+    ```json
+    {
+      "cpf": "123.456.789-01"
+    }
+    ```
+  - **Resposta**: Status indicando se o CPF está em uso.
+
+### **Usuários**
 
 - **PATCH** `/api/profile/update-password`
   - **Cabeçalho**: `Authorization: Bearer {token}`
@@ -94,15 +118,69 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Satus 200 se a troca de email foi realizada com sucesso.
 
-- **POST** `/api/profile/cpf-not-in-use`
-  - **Descrição**: Verifica se um CPF já está cadastrado.
+- **PATCH** `/api/profile/update-password`
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Descrição**: Altera a senha de acesso do usuário.
   - **Body**:
     ```json
     {
-      "cpf": "123.456.789-01"
+      "password": "password123",
+      "confirmPassword": "password123",
+      "code": 000000
     }
     ```
-  - **Resposta**: Status indicando se o CPF está em uso.
+  - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
+
+### **Pagamentos**
+
+- **POST** `/api/payments/create`
+  - **Descrição**: Cria um pagamento de um usuário.
+  - **Body**:
+    ```json
+    {
+      "cpf": "12345678901",
+      "valor": 150.00
+    }
+    ```
+  - **Resposta**: Confirmação do pagamento criado com status 201.
+
+- **GET** `/api/payments/{idPayment}`
+  - **Descrição**: Retorna os detalhes de um pagamento específico.
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Resposta**:
+    ```json
+    {
+      "user": "ID do usuário",
+      "valor": 150.00,
+      "status": "pending",
+      "paidAt": null
+    }
+    ```
+
+- **GET** `/api/payments`
+  - **Descrição**: Retorna todos os pagamentos de um usuário.
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Resposta**:
+    ```json
+    [
+      {
+        "user": "ID do usuário",
+        "valor": 150.00,
+        "status": "pending",
+        "paidAt": null
+      }
+    ]
+    ```
+
+- **POST** `/api/payments/{idPayment}/pay`
+  - **Descrição**: Realiza o pagamento de uma transação pendente.
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Resposta**: Status 200 se o pagamento for realizado com sucesso.
+
+- **POST** `/api/payments/{idPayment}/cancel`
+  - **Descrição**: Cancela um pagamento pendente.
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Resposta**: Status 200 se o pagamento for cancelado com sucesso.
 
 ### **Transações**
 

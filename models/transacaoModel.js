@@ -14,13 +14,9 @@ const transacaoSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    mensagem: {
-        type: String,
-        required: false,
-    },
     dataEnvio: {
         type: Date,
-        required: false,
+        required: true,
         default: Date.now()
     }
 });

@@ -36,7 +36,7 @@ const serviceSetTransacao = async (idUserOrigem, cpfDestino, valor, mensagem = n
         });
         await novaTransacao.save();
 
-        return { success: true, statusCode: 200, message: "Transação realizada com sucesso" };
+        return { success: true, statusCode: 200, message: "Transação realizada com sucesso", transacaoId: novaTransacao._id.toString() };
     } catch (e) {
         console.error(e);
         return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };

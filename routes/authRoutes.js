@@ -12,4 +12,4 @@ router.post('/send-code-verification', userController.sendCodeVerification);
 router.post('/email-not-in-use', validateEmail, userController.emailNotInUse);
 router.post('/cpf-not-in-use', validateCpf, userController.cpfNotInUse);
 router.post('/verification-auth', validateAuth, (req, res) => res.status(200).json({ success: true, mensagem: "Token válido" }));
-router.patch('/update-password', validatePasswordEConfirmPass, validateUser, userController.updatePassword);
+router.patch('/forgot-password', validatePasswordEConfirmPass, validateUser, userController.updatePassword);
