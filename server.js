@@ -15,7 +15,7 @@ const app = express();
 app.use(express.json());
 
 // Rotas
-app.use('/api/profile', userRoutes);
+app.use('/api/profile', validateAuth, userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', validateAuth, transacaoRoutes);
 app.use('api/payments', validateAuth, paymentsRoutes);

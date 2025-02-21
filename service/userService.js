@@ -1,197 +1,92 @@
-const User = require('../models/userModel');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const User = require('../models/userModel'); // Importa o modelo de usuário
+const bcrypt = require('bcrypt'); // Importa o bcrypt para hash de senhas
 
-const sendEmail = require('../lib/sendEmail');
-const verificationCode = require('../lib/verificationCode');
-const redisClient = require('../config/redisDB');
+const verificationCode = require('../lib/verificationCode'); // Importa a função de verificação de código
 
-const RESEND_LIMIT_TIME = 60 * 1000; // 60 segundos
-
-const serviceLogin = async (email, password) => {
+// Serviço para atualizar a senha do usuário
+const serviceUpdatePassword = async (email, password) => {
     try {
-        const user = await User.findOne({ email: email });
-        if (!user) return { success: false, statusCode: 401, mensagem: "Email ou senha inválido" };
-
-        const verifyPasswd = await user.comparePassword(password);
-        if (!verifyPasswd) return { success: false, statusCode: 401, mensagem: "Email ou senha inválido" };
-
-        const token = jwt.sign({ data: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '48h' });
-        return { success: true, statusCode: 200, mensagem: "Acesso autorizado", token: token };
-    } catch (error) {
-        return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message };
-    }
-};
-
-const serviceRegister = async (fullName, email, cpf, birthDay, password, code) => {
-    try {
+        // Conecta ao Redis
         await redisClient.connect();
-
-        // Verifica se o e-mail e CPF já estão em uso
-        if (!(await User.isThisEmailInUse(email))) {
-            return { success: false, statusCode: 409, mensagem: "Email já existente" };
-        }
-        if (!(await User.isThisCpfInUse(cpf))) {
-            return { success: false, statusCode: 409, mensagem: "CPF já existente" };
-        }
-
-        const response = await verificationCode(code, email);
-        if (!response.success) {
-            return response;
-        }
-
-        // Cria e salva o usuário
-        const user = new User({ fullName, email, cpf, birthDay, password });
-        await user.save();
-
-        // Remove o código de verificação após o uso
-        await redisClient.del(`verification:code:${code}`);
-
-        return { success: true, statusCode: 201, mensagem: "Usuário cadastrado com sucesso" };
-    } catch (error) {
-        return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message };
-    } finally {
-        redisClient.quit();
-    }
-};
-
-const serviceSendCodeVerification = async (email) => {
-    try {
-        await redisClient.connect();
-        console.log(email)
-        // Verifica o limite de reenvio
-        const lastSentTime = await redisClient.get(`verification:email:${email}`);
-        if (lastSentTime) {
-            const timeElapsed = Date.now() - parseInt(lastSentTime, 10);
-            if (timeElapsed < RESEND_LIMIT_TIME) {
-                return {
-                    success: false,
-                    statusCode: 429,
-                    mensagem: `Reenviar o código em ${(RESEND_LIMIT_TIME - timeElapsed) / 1000} segundos`,
-                };
-            }
-        }
-
-        // Gera um código aleatório
-        const code = Math.floor(100000 + Math.random() * 900000);
-        const html = `Seu código de verificação é: <b>${code}</b>`;
-
-        // Envia o e-mail com o código de verificação
-        const emailSent = await sendEmail(email, 'Código de Verificação', html);
-        if (!emailSent) {
-            return { success: false, statusCode: 500, mensagem: "Erro ao enviar código de verificação" };
-        }
-
-        // Armazena o código e a data de envio no Redis
-        await redisClient.hSet(`verification:code:${code}`, {
-            email,
-            dateCode: Date.now(),
-        });
-        await redisClient.set(`verification:email:${email}`, Date.now());
-
-        return { success: true, statusCode: 200, mensagem: "Código de verificação enviado com sucesso" };
-    } catch (error) {
-        return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message };
-    } finally {
-        redisClient.quit();
-    }
-};
-
-const emailInNotUseService = async (email) => {
-    try {
-        const responseDB = await User.isThisEmailInUse(email); // Verifica se o email está em uso
-        if (responseDB === false) {
-            return { success: false, statusCode: 409, mensagem: "Este e-mail já está em uso" };
-        }
-
-        return { success: true, statusCode: 200, mensagem: 'Email não está em uso' };
-    } catch {
-        return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
-    }
-};
-
-const serviceUpdatePassword = async (email, password, code) => {
-    try {
-        await redisClient.connect();
+        
+        // Busca o usuário no banco de dados usando o email
         const user = await User.findOne({ email: email });
         if (!user) {
+            // Retorna erro caso o usuário não seja encontrado
             return { success: false, statusCode: 404, mensagem: "Usuário não encontrado" };
         }
-        const response = await verificationCode(code, user.email);
-        if (!response.success) {
-            return response;
-        }
 
+        // Criptografa a nova senha usando bcrypt
         const hashPassword = await bcrypt.hash(password, 10);
-        await User.updateOne({ email: email }, { $set: { password: hashPassword } });
         
-        await redisClient.del(`verification:code:${code}`);
+        // Atualiza a senha do usuário no banco de dados
+        await User.updateOne({ email: email }, { $set: { password: hashPassword } });
 
+        // Retorna sucesso após atualizar a senha
         return { success: true, statusCode: 200, mensagem: "Senha atualizada com sucesso!" };
     } catch (e) {
-        console.log(e);
+        console.log(e); // Exibe erro no console para depuração
         return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
     }
 };
 
-const serviceUpdateEmail = async (idUser, email, code) => {
+// Serviço para atualizar o email do usuário
+const serviceUpdateEmail = async (idUser, email) => {
     try {
+        // Conecta ao Redis
         await redisClient.connect();
+
+        // Busca o usuário no banco de dados pelo ID
         const user = await User.findById(idUser);
         if (!user) {
+            // Retorna erro caso o usuário não seja encontrado
             return { success: false, statusCode: 404, mensagem: "Usuário não encontrado" };
         }
 
-        const response = await verificationCode(code, email);
+        // Verifica o código de verificação antes de atualizar o email
+        const response = await verificationCode(code, user.email);
         if (!response.success) {
+            // Retorna erro caso o código não seja válido
             return response;
         }
 
+        // Remove o código de verificação do Redis
+        await redisClient.del(`verification:code:${code}`);
+        
+        // Atualiza o email do usuário no banco de dados
         await User.updateOne({ _id: idUser }, { $set: { email } });
 
-        await redisClient.del(`verification:code:${code}`);
-
+        // Retorna sucesso após atualizar o email
         return { success: true, statusCode: 200, mensagem: "E-mail atualizado com sucesso!" };
     } catch (e) {
+        // Retorna erro caso haja alguma exceção
         return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
     }
 };
 
-
-const cpfInNotUseService = async (cpf) => {
-    try {
-        const responseDB = await User.isThisCpfInUse(cpf); // verifica se o cpf está em uso
-        if (responseDB === false) {
-            return { success: false, statusCode: 409, mensagem: "Este CPF já está em uso" };
-        }
-
-        return { success: true, statusCode: 200, mensagem: 'CPF não está em uso' };
-    } catch {
-        return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
-    }
-};
-
+// Serviço para recuperar as informações do usuário
 const serviceGetUser = async (id) => {
     try {
+        // Busca o usuário no banco de dados pelo ID
         const user = await User.findById(id);
-        console.log(user.user)
+        
+        // Exibe as informações do usuário no console (pode ser removido em produção)
+        console.log(user.user);
+
+        // Retorna sucesso e os dados do usuário
         return { success: true, statusCode: 200, mensagem: 'Usuário resgatado com sucesso', campos: {
             email: user.email,
             saldo: user.saldo,
             fullName: user.fullName
         }};
     } catch (e) {
+        // Retorna erro caso haja alguma exceção
         return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
     }
-}
+};
 
 module.exports = {
-    serviceLogin,
-    serviceRegister,
-    serviceSendCodeVerification,
-    emailInNotUseService,
-    cpfInNotUseService,
-    serviceUpdatePassword,
-    serviceUpdateEmail,
-    serviceGetUser
+    serviceUpdatePassword, // Exporta o serviço de atualização de senha
+    serviceUpdateEmail, // Exporta o serviço de atualização de email
+    serviceGetUser // Exporta o serviço de resgate do usuário
 };

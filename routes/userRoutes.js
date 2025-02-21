@@ -1,12 +1,12 @@
 const express = require('express');
 const userController = require('../controller/userController');
-const { validateAuth } = require('../middleware/validateAuth');
+const { validatePasswordEConfirmPass } = require('../middleware/authUser');
 
 const router = express.Router(); // Usando const
 
-// Atualização de dados
 router.patch('/update-email', userController.updateEmail);
 router.get('/get-user', userController.getUser);
-router.patch('/update-password', validatePasswordEConfirmPass, validateUser, userController.updatePassword);
+router.post('/get-user/:id', userController.updateEmail)
+router.patch('/update-password', validatePasswordEConfirmPass, userController.updatePassword);
 
 module.exports = router;
