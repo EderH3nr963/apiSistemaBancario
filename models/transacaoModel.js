@@ -3,11 +3,13 @@ const mongoose = require("mongoose");
 
 const transacaoSchema = new mongoose.Schema({
     userOrigem: {
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     userDestino: {
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     valor: {

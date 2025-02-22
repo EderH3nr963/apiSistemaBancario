@@ -18,6 +18,6 @@ app.use(express.json());
 app.use('/api/profile', validateAuth, userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', validateAuth, transacaoRoutes);
-app.use('api/payments', validateAuth, paymentsRoutes);
+app.use('/api/payments', validateAuth, paymentsRoutes);
 
 app.listen(5000);
