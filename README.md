@@ -16,7 +16,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
 
 ### **Autenticação**
 
-- **POST** `/api/profile/sign-in`
+- **POST** `/api/auth/sign-in`
   - **Descrição**: Realiza o login de um usuário.
   - **Body**:
     ```json
@@ -27,7 +27,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Retorna um token JWT.
   
-- **POST** `/api/profile/sign-up`
+- **POST** `/api/auth/sign-up`
   - **Descrição**: Realiza o cadastro de um novo usuário.
   - **Body**:
     ```json
@@ -42,12 +42,12 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Confirmação de cadastro com status 201.
 
-- **POST** `/api/profile/verification-auth`
+- **POST** `/api/auth/verification-auth`
   - **Descrição**: Verifica a validade do token JWT.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**: Status 200 se o token for válido.
 
-- **POST** `/api/profile/send-code-verification`
+- **POST** `/api/auth/send-code-verification`
   - **Descrição**: Envia um código de verificação para o e-mail do usuário.
   - **Body**:
     ```json
@@ -57,7 +57,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Código de verificação enviado.
 
-- **POST** `/api/profile/email-not-in-use`
+- **POST** `/api/auth/email-not-in-use`
   - **Descrição**: Verifica se um e-mail já está sendo usado.
   - **Body**:
     ```json
@@ -67,7 +67,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```
   - **Resposta**: Status indicando se o e-mail está em uso.
 
-- **PATCH** `/api/profile/forgot-password`
+- **PATCH** `/api/auth/forgot-password`
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Descrição**: Altera a senha de acesso do usuário.
   - **Body**:
@@ -81,7 +81,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
   - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
   
 
-- **POST** `/api/profile/cpf-not-in-use`
+- **POST** `/api/auth/cpf-not-in-use`
   - **Descrição**: Verifica se um CPF já está cadastrado.
   - **Body**:
     ```json
@@ -93,18 +93,17 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
 
 ### **Usuários**
 
-- **PATCH** `/api/profile/update-password`
+- **PATCH** `/api/profile/get-user`
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Descrição**: Altera a senha de acesso do usuário.
-  - **Body**:
+  - **Resposta**: Satus 200 se pegou os dados do usuario.
     ```json
-    {
-      "password": "password123",
-      "confirmPassword": "password123",
-      "code": 000000
-    }
+      {
+        "fullName": "Name example",
+        "saldo": 150.00,
+        "email": "example@example.com"
+      }
     ```
-  - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
 
 - **PATCH** `/api/profile/update-email`
   - **Cabeçalho**: `Authorization: Bearer {token}`
@@ -126,7 +125,6 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     {
       "password": "password123",
       "confirmPassword": "password123",
-      "code": 000000
     }
     ```
   - **Resposta**: Satus 200 se a troca de senha foi realizada com sucesso.
@@ -157,7 +155,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     }
     ```
 
-- **GET** `/api/payments`
+- **GET** `/api/payments/`
   - **Descrição**: Retorna todos os pagamentos de um usuário.
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**:

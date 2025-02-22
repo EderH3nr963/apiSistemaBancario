@@ -19,7 +19,13 @@ const serviceLogin = async (email, password) => {
 
         // Gera um token JWT para o usuário com expiração de 48 horas
         const token = jwt.sign({ data: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '48h' });
-        return { success: true, statusCode: 200, mensagem: "Acesso autorizado", token: token }; // Retorna sucesso com o token
+        return { success: true, statusCode: 200, mensagem: "Acesso autorizado", token: token, user: {
+            fullName: user.fullName,
+            email: user.email,
+            cpf: user.cpf,
+            birthDay: user.birthDay,
+            saldo: user.saldo
+        } }; // Retorna sucesso com o token
     } catch (error) {
         return { success: false, statusCode: 500, mensagem: "Erro interno no servidor: " + error.message }; // Em caso de erro no servidor
     }

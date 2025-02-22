@@ -1,7 +1,7 @@
 const UserService = require('../service/userService');
 
 const updateEmail = async (req, res) => {
-    const { email /* Email novo */ } = req.body;
+    const { email /* Email novo */, code } = req.body;
     const idUser = req.idUser;
     console.log(req.idUser)
 
@@ -12,22 +12,8 @@ const updateEmail = async (req, res) => {
 
 const getUser = async (req, res) => {
     const idUser = req.idUser;
-    console.log(req.idUser)
 
     const response = await UserService.serviceGetUser(idUser);
-
-    res.status(response.statusCode).json(response)
-}
-
-const getUserId = async (req, res) => {
-    const id = req.params;
-    console.log(req.idUser)
-
-    const response = await UserService.serviceGetUser(id);
-
-    if (id !== idUser) {
-        response.campos.saldo = null;
-    }
 
     res.status(response.statusCode).json(response)
 }

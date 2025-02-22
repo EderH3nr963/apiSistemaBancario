@@ -15,11 +15,6 @@ const Payments = new mongoose.Schema({
         enum: ['pending', 'completed', 'canceled'],
         default: 'pending'
     },
-    paymentMethod: {
-        type: String,
-        enum: ['pix', 'credit_card', 'boleto'],
-        required: false
-    },
     transactionId: {
         type: String,
         required: false
