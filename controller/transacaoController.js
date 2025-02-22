@@ -1,10 +1,10 @@
 const transacaoService = require('../service/transacaoService');
 
 const transfer = async (req, res) => {
-    const idUserOrigem = req.idUser;
-    const { cpfDestino, valor, mensagem } = req.body;
+    const idUser = req.idUser;
+    const { cpf, valor, mensagem } = req.body;
 
-    response = await transacaoService.serviceSetTransacao(idUserOrigem, cpfDestino, valor, !mensagem);
+    response = await transacaoService.serviceSetTransacao(idUser, cpf, valor, !mensagem);
 
     res.status(response.statusCode).json(response);
 }

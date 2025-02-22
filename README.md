@@ -188,7 +188,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
   - **Body**:
     ```json
     {
-      "cpfDestino": "98765432100",
+      "cpf": "98765432100",
       "valor": 150.00,
       "mensagem": "Pagamento de serviço"
     }

@@ -2,12 +2,12 @@ const Transacao = require("../models/transacaoModel"); // Importa o modelo de tr
 const User = require("../models/userModel"); // Importa o modelo de usuários
 
 // Serviço para realizar uma transação entre dois usuários
-const serviceSetTransacao = async (idUserOrigem, cpfDestino, valor, mensagem = null) => {
+const serviceSetTransacao = async (idUser, cpf, valor, mensagem = null) => {
     try {
         // Carregar os usuários de origem e destino, em uma única operação assíncrona
         const [userOrigem, userDestino] = await Promise.all([
-            User.findById(idUserOrigem).session(session), // Busca o usuário de origem
-            User.findOne({ cpf: cpfDestino.replace(/\D/g, "") }).session(session) // Busca o usuário de destino, removendo pontuação do CPF
+            User.findById(idUser).session(session), // Busca o usuário de origem
+            User.findOne({ cpf: cpf.replace(/\D/g, "") }).session(session) // Busca o usuário de destino, removendo pontuação do CPF
         ]);
 
         // Validações de entrada
