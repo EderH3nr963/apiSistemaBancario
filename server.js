@@ -20,4 +20,4 @@ app.use('/api/auth', authRoutes);
 app.use('/api/transactions', validateAuth, transacaoRoutes);
 app.use('/api/payments', validateAuth, paymentsRoutes);
 
-app.listen(5000);
+app.listen(80);

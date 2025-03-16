@@ -27,4 +27,13 @@ const updatePassword = async (req, res) => {
     res.status(response.statusCode).json(response);
  }
 
-module.exports = { updateEmail, getUser, updatePassword };
+ const getUserWithoutSensitiveData = async (req, res) => {
+    const { id } = req.params;
+
+    // Chama o serviço para obter o usuário sem dados sensíveis
+    const response = await UserService.serviceGetUserWithoutSensitiveData(id);
+
+    res.status(response.statusCode).json(response);
+}
+
+module.exports = { updateEmail, getUser, updatePassword, getUserWithoutSensitiveData };

@@ -2,15 +2,18 @@ const Payments = require("../models/paymentsModel");
 const User = require("../models/userModel");
 const transacaoService = require("./transacaoService");
 
-// Função para registrar um pagamento
-const serviceSetPayment = async (cpf, valor) => {
+const serviceSetPayment = async (idUserCobrador, cpfDevedor, valor) => {
     try {
-        // Busca o usuário pelo CPF
-        const user = await User.findOne({ cpf: cpf });
+        // Busca o cobrador e o devedor pelo CPF
+        const cobrador = await User.findById(idUserCobrador);
+        const devedor = await User.findOne({ cpf: cpfDevedor });
 
-        // Verifica se o usuário existe
-        if (!user) {
-            return { success: false, statusCode: 404, message: "Usuário inexistente" };
+        // Verifica se o cobrador e o devedor existem
+        if (!cobrador) {
+            return { success: false, statusCode: 404, message: "Cobrador inexistente" };
+        }
+        if (!devedor) {
+            return { success: false, statusCode: 404, message: "Devedor inexistente" };
         }
 
         // Verifica se o valor do pagamento é válido (maior que zero)
@@ -20,18 +23,20 @@ const serviceSetPayment = async (cpf, valor) => {
 
         // Cria um novo pagamento com status 'pending' (pendente)
         const payment = new Payments({
-            user: user._id,
+            user: devedor._id, // Quem será cobrado (devedor)
+            cobrador: cobrador._id, // Quem cria a cobrança (cobrador)
             valor: valor,
             status: 'pending'
         });
 
         // Salva o pagamento no banco de dados
         await payment.save();
-        return { success: true, statusCode: 201, message: "Pagamento realizado com sucesso", payment: payment };
+        return { success: true, statusCode: 201, message: "Pagamento registrado com sucesso", payment: payment };
     } catch (err) {
         return { success: false, statusCode: 500, message: "Erro interno no servidor" };
     }
 };
+
 
 // Função para buscar um pagamento específico
 const serviceGetPayment = async (idPayment, idUser) => {
@@ -43,11 +48,6 @@ const serviceGetPayment = async (idPayment, idUser) => {
         // Verifica se o pagamento e o usuário existem
         if (!payment || !user) {
             return { success: false, statusCode: 404, message: "Pagamento ou Usuário inexistente" };
-        }
-
-        // Verifica se o pagamento pertence ao usuário
-        if (payment.user.toString() !== user._id.toString()) {
-            return { success: false, statusCode: 403, message: "Você não tem permissão para acessar este pagamento" };
         }
 
         return { success: true, statusCode: 200, message: "Pagamento encontrado", payment };
@@ -91,7 +91,7 @@ const servicePayPayment = async (idPayment, idUser) => {
             return { success: false, statusCode: 400, message: "Este pagamento já foi pago" };
         }
 
-        if (payment.status === "failed") {
+        if (payment.status === "canceled") {
             return { success: false, statusCode: 400, message: "Este pagamento não pode ser pago pois foi cancelado" };
         }
 
@@ -102,11 +102,11 @@ const servicePayPayment = async (idPayment, idUser) => {
 
         // Registra a transação entre os usuários
         const transacaoRefPag = await transacaoService.serviceSetTransacao(user._id.toString(), userDestino.cpf, payment.valor, "Pagamento");
-        
+
         // Atualiza os saldos dos usuários
         await User.updateOne({ _id: payment.user }, { $inc: { saldo: payment.valor } });
         await User.updateOne({ _id: user._id }, { $inc: { saldo: -payment.valor } });
-        
+
         // Atualiza o pagamento com a transação e marca como 'completed' (completado)
         payment.transactionId = transacaoRefPag.transactionId;
         payment.status = "completed";

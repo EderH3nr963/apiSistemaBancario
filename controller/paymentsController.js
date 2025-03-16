@@ -2,7 +2,8 @@ const paymentsServices = require('../service/paymentsService');
 
 const setPayment = async (req, res) => {
     const { cpf, valor } = req.body;
-    const response = await paymentsServices.serviceSetPayment(cpf, valor);
+    const { idUser } = req.idUser;
+    const response = await paymentsServices.serviceSetPayment(idUser, cpf, valor);
 
     return res.status(response.statusCode).json({ message: response.message, payment: response.payment });
 };

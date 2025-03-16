@@ -95,12 +95,22 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
 
 - **PATCH** `/api/profile/get-user`
   - **Cabeçalho**: `Authorization: Bearer {token}`
-  - **Descrição**: Altera a senha de acesso do usuário.
+  - **Descrição**: Pega os dados do usuário authentificado.
   - **Resposta**: Satus 200 se pegou os dados do usuario.
     ```json
       {
         "fullName": "Name example",
         "saldo": 150.00,
+        "email": "example@example.com"
+      }
+    ```
+- **PATCH** `/api/profile/get-user/{id}`
+  - **Cabeçalho**: `Authorization: Bearer {token}`
+  - **Descrição**: Pega o nome completo e email do usuario.
+  - **Resposta**: Satus 200 se pegou os dados do usuario.
+    ```json
+      {
+        "fullName": "Name example",
         "email": "example@example.com"
       }
     ```
@@ -149,6 +159,7 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
     ```json
     {
       "user": "ID do usuário",
+      "cobrador": "ID do cobrador",
       "valor": 150.00,
       "status": "pending",
       "paidAt": null
@@ -160,14 +171,13 @@ A API do **Sistema Bancário** permite a realização de transações entre usu�
   - **Cabeçalho**: `Authorization: Bearer {token}`
   - **Resposta**:
     ```json
-    [
-      {
-        "user": "ID do usuário",
-        "valor": 150.00,
-        "status": "pending",
-        "paidAt": null
-      }
-    ]
+    {
+      "user": "ID do usuário",
+      "cobrador": "ID do cobrador",
+      "valor": 150.00,
+      "status": "pending",
+      "paidAt": null
+    }
     ```
 
 - **POST** `/api/payments/{idPayment}/pay`
