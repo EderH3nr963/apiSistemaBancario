@@ -2,36 +2,29 @@ const Transacao = require("../models/transacaoModel"); // Importa o modelo de tr
 const User = require("../models/userModel"); // Importa o modelo de usuários
 
 // Serviço para realizar uma transação entre dois usuários
-const serviceSetTransacao = async (idUser, cpf, valor, mensagem = null) => {
+const serviceSetTransacao = async ({ idUser, cpfDestinatario, valor, mensagem = null }) => {
     try {
         // Carregar os usuários de origem e destino, em uma única operação assíncrona
-        const [userOrigem, userDestino] = await Promise.all([
+        const [userRemetente, userDestinatario] = await Promise.all([
             User.findById(idUser).session(session), // Busca o usuário de origem
-            User.findOne({ cpf: cpf.replace(/\D/g, "") }).session(session) // Busca o usuário de destino, removendo pontuação do CPF
+            User.findOne({ cpf: cpfDestinatario.replace(/\D/g, "") }).session(session) // Busca o usuário de destino, removendo pontuação do CPF
         ]);
 
         // Validações de entrada
-        if (valor < 1) {
-            return { success: false, statusCode: 400, message: "O valor mínimo da transação é 1.00" };
-        }
-        if (!userOrigem) {
-            return { success: false, statusCode: 404, message: "Usuário de origem inexistente" };
-        }
-        if (!userDestino) {
-            return { success: false, statusCode: 404, message: "Usuário de destino inexistente" };
-        }
-        if (valor > userOrigem.saldo) {
-            return { success: false, statusCode: 400, message: "Saldo insuficiente" };
-        }
+        if (valor < 1) return { success: false, statusCode: 400, message: "O valor mínimo da transação é 1.00" };
+
+        if (!userDestinatario) return { success: false, statusCode: 404, message: "Usuário de destino inexistente" };
+
+        if (valor > userRemetente.saldo) return { success: false, statusCode: 400, message: "Saldo insuficiente" };
 
         // Atualiza os saldos dos usuários após a transação
-        await User.updateOne({ _id: userOrigem._id }, { $inc: { saldo: -valor } });
-        await User.updateOne({ _id: userDestino._id }, { $inc: { saldo: valor } });
+        await User.updateOne({ _id: userRemetente._id }, { $inc: { saldo: -valor } });
+        await User.updateOne({ _id: userDestinatario._id }, { $inc: { saldo: valor } });
 
         // Cria uma nova transação e a salva no banco de dados
         const novaTransacao = new Transacao({
-            userOrigem: idUserOrigem,
-            userDestino: userDestino._id,
+            userRemetente: iduserRemetente,
+            userDestinatario: userDestinatario._id,
             valor,
             mensagem
         });
@@ -46,22 +39,14 @@ const serviceSetTransacao = async (idUser, cpf, valor, mensagem = null) => {
 };
 
 // Serviço para buscar todas as transações de um usuário (enviadas e recebidas)
-const serviceGetAllTransacao = async (id) => {
+const serviceGetAllTransacao = async ({ idUser }) => {
     try {
-        // Verifica se o ID do usuário foi fornecido
-        if (!id) {
-            return { success: false, statusCode: 400, message: "ID do usuário é obrigatório" };
-        }
-
         // Busca o usuário no banco de dados
         const user = await User.findById(id);
-        if (!user) {
-            return { success: false, statusCode: 404, message: "Usuário inexistente" };
-        }
 
         // Busca as transações enviadas e recebidas pelo usuário
-        const transacoesEnviadas = await Transacao.find({ userOrigem: id });
-        const transacoesRecebidas = await Transacao.find({ userDestino: id });
+        const transacoesEnviadas = await Transacao.find({ userRemetente: idUser });
+        const transacoesRecebidas = await Transacao.find({ userDestinatario: idUser });
 
         // Caso não haja transações, retorna uma mensagem adequada
         if (transacoesEnviadas.length === 0 && transacoesRecebidas.length === 0) {
@@ -76,28 +61,22 @@ const serviceGetAllTransacao = async (id) => {
             transacoes: [...transacoesEnviadas, ...transacoesRecebidas]
         };
     } catch (e) {
-        console.error(e); // Exibe o erro para depuração
         return { success: false, statusCode: 500, message: "Erro interno no servidor, tente novamente mais tarde" };
     }
 };
 
 // Serviço para buscar uma transação específica
-const serviceGetTransacao = async (idUser, idTransacao) => {
+const serviceGetTransacao = async ({ idUser, idTransacao }) => {
     try {
         // Verifica se o usuário existe
         const user = await User.findById(idUser);
-        if (!user) {
-            return { success: false, statusCode: 404, message: "Usuário inexistente" };
-        }
 
         // Busca a transação no banco de dados
         const transacao = await Transacao.findById(idTransacao);
-        if (!transacao) {
-            return { success: false, statusCode: 404, message: "Transação não encontrada" };
-        }
+        if (!transacao) return { success: false, statusCode: 404, message: "Transação não encontrada" };
 
         // Verifica se o usuário tem permissão para acessar essa transação
-        if (transacao.userOrigem.toString() !== idUser && transacao.userDestino.toString() !== idUser) {
+        if (transacao.userRemetente.toString() !== idUser && transacao.userDestinatario.toString() !== idUser) {
             return {
                 success: false,
                 statusCode: 403, // Código de acesso negado
@@ -118,14 +97,10 @@ const serviceGetTransacao = async (idUser, idTransacao) => {
 };
 
 // Serviço para realizar um depósito na conta de um usuário
-const serviceDeposit = async (idUser, valor) => {
+const serviceDeposit = async ({ idUser, valor }) => {
     try {
         // Busca o usuário no banco de dados
         user = await User.findById(idUser);
-
-        if (!user) {
-            return { success: false, statusCode: 404, message: "Usuário inexistente" };
-        }
 
         // Atualiza o saldo do usuário com o valor do depósito
         await User.updateOne({ _id: user._id }, { $inc: { saldo: valor } });
@@ -138,14 +113,10 @@ const serviceDeposit = async (idUser, valor) => {
 };
 
 // Serviço para realizar um saque na conta de um usuário
-const serviceWithdraw = async (idUser, valor) => { 
+const serviceWithdraw = async ({ idUser, valor }) => {
     try {
         // Busca o usuário no banco de dados
         user = await User.findById(idUser);
-
-        if (!user) {
-            return { success: false, statusCode: 404, message: "Usuário inexistente" };
-        }
 
         // Atualiza o saldo do usuário, descontando o valor do saque
         await User.updateOne({ _id: user._id }, { $inc: { saldo: -valor } });

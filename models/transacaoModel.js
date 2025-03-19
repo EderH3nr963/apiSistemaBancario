@@ -16,6 +16,11 @@ const transacaoSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    tipo: {
+        type: String,
+        required: true,
+        enum: ['transferencia', 'pagamento']
+    },
     dataEnvio: {
         type: Date,
         required: true,

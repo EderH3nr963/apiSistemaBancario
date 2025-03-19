@@ -8,7 +8,7 @@ const serviceUpdatePassword = async (email, password) => {
     try {
         // Conecta ao Redis
         await redisClient.connect();
-        
+
         // Busca o usuário no banco de dados usando o email
         const user = await User.findOne({ email: email });
         if (!user) {
@@ -18,7 +18,7 @@ const serviceUpdatePassword = async (email, password) => {
 
         // Criptografa a nova senha usando bcrypt
         const hashPassword = await bcrypt.hash(password, 10);
-        
+
         // Atualiza a senha do usuário no banco de dados
         await User.updateOne({ email: email }, { $set: { password: hashPassword } });
 
@@ -52,7 +52,7 @@ const serviceUpdateEmail = async (idUser, email) => {
 
         // Remove o código de verificação do Redis
         await redisClient.del(`verification:code:${code}`);
-        
+
         // Atualiza o email do usuário no banco de dados
         await User.updateOne({ _id: idUser }, { $set: { email } });
 
@@ -71,11 +71,17 @@ const serviceGetUser = async (id) => {
         const user = await User.findById(id);
 
         // Retorna sucesso e os dados do usuário
-        return { success: true, statusCode: 200, mensagem: 'Usuário resgatado com sucesso', campos: {
-            email: user.email,
-            saldo: user.saldo,
-            fullName: user.fullName
-        }};
+        return {
+            success: true, 
+            statusCode: 200, 
+            mensagem: 'Usuário resgatado com sucesso', 
+            user: {
+                _id: user._id,
+                email: user.email,
+                saldo: user.saldo,
+                fullName: user.fullName
+            }
+        };
     } catch (e) {
         // Retorna erro caso haja alguma exceção
         return { success: false, statusCode: 500, mensagem: 'Erro interno no servidor. Tente novamente mais tarde' };
@@ -87,13 +93,17 @@ const serviceGetUserWithoutSensitiveData = async (idUser) => {
     try {
         // Busca o usuário pelo ID, excluindo os campos sensíveis como 'senha'
         const user = await User.findById(idUser); // Exclui o campo 'senha'
-        
-        // Verifica se o usuário foi encontrado
-        if (!user) {
-            return { success: false, statusCode: 404, message: "Usuário não encontrado" };
-        }
 
-        return { success: true, statusCode: 200, message: "Usuário encontrado", user: { fullName: user.fullName, email: user.email } };
+        return { 
+            success: true,
+            statusCode: 200, 
+            message: "Usuário encontrado", 
+            user: { 
+                _id: user._id, 
+                fullName: user.fullName, 
+                email: user.email 
+            }
+        };
     } catch (err) {
         return { success: false, statusCode: 500, message: "Erro ao buscar o usuário" };
     }
