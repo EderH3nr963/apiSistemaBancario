@@ -1,0 +1,31 @@
+{
+  "name": "apiSistemaBancarioTS2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon --exec ts-node index.ts"
+  },
+  "dependencies": {
+    "@types/connect-redis": "^0.0.23",
+    "@types/express": "^5.0.1",
+    "@types/express-session": "^1.18.1",
+    "@types/express-validator": "^3.0.2",
+    "@types/node": "^22.14.0",
+    "@types/nodemailer": "^6.4.17",
+    "bcrypt": "^5.1.1",
+    "bcrypt-ts": "^6.0.0",
+    "connect-redis": "5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "express-validator": "^7.2.1",
+    "ioredis": "^5.6.0",
+    "mysql2": "^3.14.0",
+    "node-ts": "^8.0.2",
+    "nodemailer": "^6.10.0",
+    "redis": "^4.7.0",
+    "sequelize": "^6.37.7",
+    "typescript": "^5.8.3"
+  }
+}
