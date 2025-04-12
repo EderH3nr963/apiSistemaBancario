@@ -50,9 +50,9 @@ MAIL_USER=seu_email@gmail.com
 
 5. Inicie o servidor:
 ```bash
-npm run dev
+npm start
 # ou
-yarn dev
+yarn start
 ```
 
 ## 📚 Endpoints
