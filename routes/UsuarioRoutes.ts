@@ -1,11 +1,23 @@
 import express from "express";
 import UsuarioController from "../controllers/UsuarioController";
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import MyValidatorResult from "../middlewares/MyValidatorResult";
 import UsuarioValidatorData from "../middlewares/UsuarioValidatorData";
 const router = express.Router();
 
 router.get("/", UsuarioController.get);
+router.get(
+  "/:chave_transferencia",
+  [
+    param("chave_transferencia")
+      .exists()
+      .withMessage("Chave de transferência nula")
+      .isString()
+      .withMessage("Chave de transferência inválida")
+  ],
+  MyValidatorResult,
+  UsuarioController.get
+);
 
 router.patch(
   "/email",

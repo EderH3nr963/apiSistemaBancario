@@ -4,31 +4,18 @@ import sequelize from "../config/database";
 
 class TransacaoService {
   static async transferMoney(
-    id_usuario: number,
+    id_conta: number,
     passwordRemetente: string,
-    cpf_destinatario: string,
+    chave_transferencia: string,
     value: number,
     descricao: string | null
   ) {
     const transaction = await sequelize.transaction();
     try {
-      const usuarioDestinatario = await UsuarioModel.findOne({
-        where: { cpf: cpf_destinatario, is_inactive: false },
+      const contaRemetente = await ContaModel.findByPk(id_conta);
+      const contaDestinario = await ContaModel.findOne({
+        where: { chave_transferencia: chave_transferencia },
       });
-      if (!usuarioDestinatario) {
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Usuário não encontrado",
-        };
-      }
-
-      const contaRemetente = await ContaModel.findOne({
-        where: { id_usuario: id_usuario },
-      });
-      const contaDestinario = await ContaModel.findByPk(
-        usuarioDestinatario.id_usuario
-      );
 
       if (!contaDestinario || !contaRemetente) {
         return {
@@ -54,25 +41,26 @@ class TransacaoService {
         };
       }
 
-      await contaRemetente.update(
-        { saldo: contaRemetente.saldo - value },
-        { transaction }
-      );
-      await contaDestinario.update(
-        { saldo: contaDestinario.saldo + value },
-        { transaction }
-      );
-
-      await TransacaoModel.create(
-        {
-          id_conta_destino: contaDestinario.id_conta,
-          id_conta_origem: contaRemetente.id_conta,
-          valor: value,
-          descricao: descricao || "",
-          tipo: "transferência",
-        },
-        { transaction }
-      );
+      Promise.all([
+        await contaRemetente.update(
+          { saldo: Number(contaRemetente.saldo) - value },
+          { transaction }
+        ),
+        await contaDestinario.update(
+          { saldo: Number(contaDestinario.saldo) + value },
+          { transaction }
+        ),
+        await TransacaoModel.create(
+          {
+            id_conta_destino: contaDestinario.id_conta,
+            id_conta_origem: contaRemetente.id_conta,
+            valor: value,
+            descricao: descricao || "",
+            tipo: "transferência",
+          },
+          { transaction }
+        ),
+      ]);
 
       await transaction.commit();
 

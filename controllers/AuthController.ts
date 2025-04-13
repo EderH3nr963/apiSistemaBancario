@@ -24,6 +24,7 @@ class AuthController {
 
     if (response.status == "success" && response.usuario) {
       req.session.id_usuario = response.usuario.id_usuario;
+      req.session.id_conta = response.usuario.conta_bancaria?.id_conta;
       req.session.is_admin = response.usuario.is_admin;
     }
 

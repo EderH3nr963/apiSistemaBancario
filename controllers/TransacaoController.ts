@@ -3,9 +3,9 @@ import TransacaoService from "../services/TransacaoService";
 
 class TransacaoController {
   static async transferMoney(req: Request, res: Response) {
-    const { password, value, cpf_destinatario, descricao } = req.body;
-    const id_usuario = req.session.id_usuario;
-    if (!id_usuario || typeof id_usuario !== "number") {
+    const { password, value, chave_transferencia, descricao } = req.body;
+    const id_conta = req.session.id_conta;
+    if (!id_conta || typeof id_conta !== "number") {
       res.status(503).json({
         status: "error",
         statusCode: 503,
@@ -15,9 +15,9 @@ class TransacaoController {
     }
 
     const response = await TransacaoService.transferMoney(
-      id_usuario,
+      id_conta,
       password,
-      cpf_destinatario,
+      chave_transferencia,
       value,
       descricao
     );

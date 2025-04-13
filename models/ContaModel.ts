@@ -9,6 +9,7 @@ import sequelize from "../config/database";
 import * as bcrypt from "bcrypt-ts";
 
 import TransacaoModel from "./TransacaoModel";
+import UsuarioModel from "./UsuarioModel";
 
 class ContaModel extends Model<
   InferAttributes<ContaModel>,
@@ -18,8 +19,10 @@ class ContaModel extends Model<
   public tipo_conta!: string;
   public saldo!: CreationOptional<number>;
   public status_conta!: CreationOptional<string>;
+  public chave_transferencia!: string;
   public password!: string;
   public id_usuario!: number;
+  public usuario?: UsuarioModel;
   public validPassword!: (password: string) => Promise<boolean>;
 }
 
@@ -40,6 +43,10 @@ ContaModel.init(
       type: DataTypes.DECIMAL(13, 2),
       allowNull: false,
       defaultValue: 0.0,
+    },
+    chave_transferencia: {
+      type: DataTypes.STRING,
+      unique: true
     },
     status_conta: {
       type: DataTypes.ENUM("ativa", "bloqueada", "desativada"),

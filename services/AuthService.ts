@@ -103,7 +103,7 @@ class AuthService {
         ],
       });
 
-      if (!usuario || !(await usuario.validPassword(passwordReq))) {
+      if (!usuario || !(await usuario.validPassword(passwordReq)) || !usuario.conta_bancaria) {
         return {
           status: "error",
           statusCode: 400,

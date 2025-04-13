@@ -8,11 +8,9 @@ const TransacaoValidatorData = {
     body("value")
       .isNumeric()
       .withMessage("O valor tem que ser do tipo numérico"),
-    body("cpf_destinatario")
-      .exists()
-      .withMessage("Campo CPF não pode ser nulo.")
-      .matches(/^\d{11}$/)
-      .withMessage("CPF inválido"),
+    body("chave_transferencia")
+      .isString()
+      .withMessage("Chave de transferência inválida"),
   ],
 };
 

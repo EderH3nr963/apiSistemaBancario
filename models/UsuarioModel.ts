@@ -25,6 +25,7 @@ class UsuarioModel extends Model<
   public is_inactive!: CreationOptional<boolean>;
   public is_admin!: CreationOptional<boolean>;
   public validPassword!: (password: string) => Promise<boolean>;
+  public conta_bancaria?: ContaModel;
 }
 
 UsuarioModel.init(

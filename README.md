@@ -497,6 +497,94 @@ Obtém detalhes de uma transação específica.
 }
 ```
 
+### Pagamentos (`/api/v1/pagamento`)
+
+#### POST /
+Cria um novo pagamento pendente.
+
+**Request Body:**
+```json
+{
+  "valor": 150.75
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "statusCode": 201,
+  "msg": "Pagamento criado com sucesso",
+  "pagamento": {
+    "id_pagamento": 1,
+    "valor": 150.75,
+    "chave_pagamento": "a1b2c3d4e5f6g7h8i9j0",
+    "status_pagamento": "pendente",
+    "id_conta_destino": 1
+  }
+}
+```
+
+#### GET /:chave_pagamento
+Obtém detalhes de um pagamento específico.
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "msg": "Pagamento encontrado com sucesso",
+  "pagamento": {
+    "id_pagamento": 1,
+    "valor": 150.75,
+    "chave_pagamento": "a1b2c3d4e5f6g7h8i9j0",
+    "status_pagamento": "pendente",
+    "id_conta_destino": 1
+  },
+  "conta_cobrador": {
+    "id_conta": 1,
+    "tipo_conta": "corrente",
+    "status_conta": "ativa",
+    "usuario": {
+      "full_name": "João da Silva",
+      "email": "usuario@exemplo.com"
+    }
+  }
+}
+```
+
+#### POST /pay
+Realiza o pagamento de uma cobrança pendente.
+
+**Request Body:**
+```json
+{
+  "password": "123456",
+  "chave_pagamento": "a1b2c3d4e5f6g7h8i9j0"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "msg": "Pagamento realizado com sucesso"
+}
+```
+
+#### DELETE /:chave_pagamento
+Cancela um pagamento pendente.
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "msg": "Pagamento cancelado com sucesso"
+}
+```
+
 ## 🔒 Validações
 
 ### Registro de Usuário
@@ -518,6 +606,12 @@ Obtém detalhes de uma transação específica.
 - Senha da conta válida
 - Valor numérico
 - CPF do destinatário válido
+
+### Pagamentos
+- Valor deve ser numérico
+- Senha da conta com 6 dígitos numéricos
+- Chave de pagamento válida
+- Status do pagamento (pendente, rejeitada, aceita, cancelada)
 
 ## 🛠️ Estrutura do Projeto
 

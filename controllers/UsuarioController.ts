@@ -18,6 +18,14 @@ class UsuarioController {
     res.status(response.statusCode).json(response);
   }
 
+  static async getByChaveTransferencia(req: Request, res: Response) {
+    const chave_transferencia = req.params;
+
+    const response = await UsuarioService.getByChaveTransferencia(chave_transferencia.toString());
+
+    res.status(response.statusCode).json(response);
+  }
+
   static async updateEmail(req: Request, res: Response) {
     const { email } = req.body;
     const id_usuario = req.session.id_usuario;

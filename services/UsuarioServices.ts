@@ -18,7 +18,7 @@ class UsuarioService {
           {
             model: EnderecoModel,
             as: "endereco",
-            attributes: { exclude: ["id_usuario"] },
+            attributes: { exclude: ["id_usuario", "id_endereco"] },
           },
           {
             model: ContaModel,
@@ -43,7 +43,39 @@ class UsuarioService {
         msg: "Usuário encontrado.",
         usuario: usuarioRetornar,
       };
-      usuario;
+    } catch (e) {
+      // Mensagem genérica para erros no servidor
+      return {
+        status: "error",
+        statusCode: 500,
+        msg: "Usuario não encontrado",
+      };
+    }
+  }
+
+  static async getByChaveTransferencia(chave_transferencia: string) {
+    try {
+      // Pega o usuário no banco de dados
+      const conta = await ContaModel.findOne({
+        where: { chave_transferencia: chave_transferencia },
+        attributes: { exclude: ["password", "saldo", "chave_transferencia", "status_conta"] },
+        include: { model: UsuarioModel, as: "usuario", attributes: {include: ["full_name", "email"]} }
+      })
+
+      // Verifica se o usuário existe e foi coletado corretamente
+      if (!conta)
+        return {
+          status: "error",
+          statusCode: 500,
+          msg: "Conta bancária não encontrada",
+        };
+
+      return {
+        status: "success",
+        statusCode: 200,
+        msg: "Usuário encontrado.",
+        conta: conta,
+      };
     } catch (e) {
       // Mensagem genérica para erros no servidor
       return {

@@ -2,6 +2,7 @@ import ContaModel from "./ContaModel";
 import TransacaoModel from "./TransacaoModel";
 import UsuarioModel from "./UsuarioModel";
 import EnderecoModel from "./EnderecoModel";
+import PagamentoModel from "./PagamentoModel";
 
 // Usuário tem uma conta
 UsuarioModel.hasOne(ContaModel, {
@@ -34,6 +35,18 @@ ContaModel.hasMany(TransacaoModel, {
   as: "transacoesDestino",
   foreignKey: "id_conta_destino",
 });
+
+// Conta tem muitos pagamentos como destino
+ContaModel.hasMany(PagamentoModel, {
+  as: "pagamento_destino",
+  foreignKey: "id_conta_destino"
+})
+
+// Pagamento pertence a uma conta de destino
+PagamentoModel.belongsTo(UsuarioModel, {
+  as: "conta_destino",
+  foreignKey: "id_conta_destino"
+})
 
 // Transação pertence a uma conta de origem
 TransacaoModel.belongsTo(ContaModel, {

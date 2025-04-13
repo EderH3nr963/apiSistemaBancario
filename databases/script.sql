@@ -6,65 +6,68 @@ Create database banco_financeiro;
 
 use banco_financeiro;
 
-Create Table usuario (
-    id_usuario int primary key auto_increment,
-    full_name varchar(100) not null,
-    password varchar(100) not null unique,
-    cpf char(11) not null unique,
-    email varchar(100) not null unique,
-    telefone varchar(14) not null unique,
-    is_inactive BOOLEAN DEFAULT false,
-    is_admin BOOLEAN DEFAULT false
+CREATE TABLE usuario (
+    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+    full_name VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL, -- Removi o UNIQUE (senhas podem coincidir, especialmente se forem hashes)
+    cpf CHAR(11) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telefone VARCHAR(14) NOT NULL UNIQUE,
+    is_inactive BOOLEAN DEFAULT FALSE,
+    is_admin BOOLEAN DEFAULT FALSE,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-ALTER TABLE usuario
-ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
-
-
-Create table endereco (
-    id_endereco int PRIMARY KEY AUTO_INCREMENT,
-    rua varchar(120),
-    numero int,
-    cidade varchar(50),
-    estado varchar(20),
-    id_usuario int not null,
-    FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+CREATE TABLE endereco (
+    id_endereco INT PRIMARY KEY AUTO_INCREMENT,
+    rua VARCHAR(120),
+    numero INT,
+    cidade VARCHAR(50),
+    estado VARCHAR(20),
+    id_usuario INT NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
 
-ALTER TABLE endereco
-ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
-
-drop table if exists usuario,
-conta_bancaria,
-agencia,
-emprestimo,
-instituicao,
-transacao,
-cartao,
-fatura,
-investimento,
-extrato,
-cofrinho;
-
-Create Table conta_bancaria (
-    id_conta int primary key auto_increment,
-    id_usuario int not null, -- chave estrangeira da tabela usuario
-    password char(6) not null,
-    tipo_conta ENUM("corrente", "poupanca") not null, -- serve pra ver se é conta corrente ou poupança
-    saldo decimal(13, 2) default 0.0,
-    status_conta ENUM(
-        "bloqueada",
-        "fechada",
-        "ativa"
-    ) DEFAULT "ativa", -- tipo bloqueada, fechada, ativa. Por que assim os cara pode fazer o cara pagar multa ou não
-    FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+CREATE TABLE conta_bancaria (
+    id_conta INT PRIMARY KEY AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    password CHAR(6) NOT NULL,
+    tipo_conta ENUM('corrente', 'poupanca') NOT NULL,
+    saldo DECIMAL(13, 2) DEFAULT 0.0,
+    chave_transferencia VARCHAR(100) UNIQUE, -- você pode gerar isso no app e usar cpf/email etc
+    status_conta ENUM('bloqueada', 'fechada', 'ativa') DEFAULT 'ativa',
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
 
-ALTER TABLE conta_bancaria
-ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+CREATE TABLE pagamento (
+    id_pagamento INT PRIMARY KEY AUTO_INCREMENT,
+    id_conta_destino INT NOT NULL,
+    valor DECIMAL(10, 2) NOT NULL,
+    status_pagamento ENUM('pendente', 'rejeitada', 'aceita', 'cancelada'), -- troquei " por '
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    chave_pagamento VARCHAR(150) NOT NULL,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_conta_destino) REFERENCES conta_bancaria(id_conta)
+);
+
+CREATE TABLE transacao (
+    id_transacao INT PRIMARY KEY AUTO_INCREMENT,
+    id_conta_origem INT NOT NULL,
+    id_conta_destino INT NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    valor DECIMAL(10, 2) NOT NULL,
+    descricao TEXT,
+    status ENUM('cancelada', 'aprovada') DEFAULT 'aprovada',
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_conta_origem) REFERENCES conta_bancaria(id_conta),
+    FOREIGN KEY (id_conta_destino) REFERENCES conta_bancaria(id_conta)
+);
 
 Create Table agencia (
     id_agencia int primary key auto_increment,
@@ -83,28 +86,6 @@ Create Table emprestimo (
     data_emp date not null
 );
 
-Create Table instituicao (
-    id_instituicao int primary key auto_increment,
-    nome varchar(100) not null,
-    codigo_banco int not null unique,
-    tipo_instituicao varchar(50),
-    email varchar(100),
-    tipo_servicos varchar(100)
-);
-
-Create Table transacao (
-    id_transacao int primary key auto_increment,
-    id_conta_origem int not null,
-    id_conta_destino int not null,
-    tipo varchar(50) not null,
-    valor decimal(10, 2) NOT NULL,
-    descricao TEXT,
-    status ENUM("cancelada", "aprovada") DEFAULT "aprovada",
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    Foreign key (id_conta_origem) references conta_bancaria (id_conta)
-    Foreign key (id_conta_destino) references conta_bancaria (id_conta)
-);
 
 Create Table cartao (
     id_cartao int primary key auto_increment,

@@ -8,6 +8,7 @@ import Redis from "ioredis";
 import AuthRoutes from "./routes/AuthRoutes";
 import UsuarioRoutes from "./routes/UsuarioRoutes";
 import TransacaoRoutes from "./routes/TransacaoRoutes";
+import PagamentoRoutes from "./routes/PagamentoRoutes";
 
 import "./types/expressSessionType";
 
@@ -33,6 +34,7 @@ app.use(
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/usuario", UsuarioRoutes);
 app.use("/api/v1/transacao", TransacaoRoutes);
+app.use("/api/v1/pagamento", PagamentoRoutes);
 
 app.listen(3000, () => {
   console.log("Servidor rodando na porta 3000");
