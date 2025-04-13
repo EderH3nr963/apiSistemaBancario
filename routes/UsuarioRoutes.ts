@@ -14,10 +14,16 @@ router.patch(
   UsuarioController.updateEmail
 );
 router.patch(
-  "/password",
+  "/password-login",
   UsuarioValidatorData.updatePassword,
   MyValidatorResult,
-  UsuarioController.updatePassword
+  UsuarioController.updatePasswordUsuario
+);
+router.patch(
+  "/password-conta",
+  UsuarioValidatorData.updatePassword,
+  MyValidatorResult,
+  UsuarioController.updatePasswordConta
 );
 router.patch(
   "/telefone",

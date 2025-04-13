@@ -289,8 +289,29 @@ Atualiza email do usuário.
 }
 ```
 
-#### PATCH /password
+#### PATCH /password-login
 Atualiza senha do usuário.
+
+**Request Body:**
+```json
+{
+  "oldPassword": "SenhaAntiga@123",
+  "newPassword": "NovaSenha@123",
+  "confirm_newPassword": "NovaSenha@123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "msg": "Senha atualizada com sucesso"
+}
+```
+
+#### PATCH /password-conta
+Atualiza senha da conta(senha de 6 digitos, usada para validar trnasações).
 
 **Request Body:**
 ```json

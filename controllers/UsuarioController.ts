@@ -35,7 +35,7 @@ class UsuarioController {
     res.status(response.statusCode).json(response);
   }
 
-  static async updatePassword(req: Request, res: Response) {
+  static async updatePasswordUsuario(req: Request, res: Response) {
     const { newPassword, oldPassword } = req.body;
     const id_usuario = req.session.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
@@ -47,7 +47,28 @@ class UsuarioController {
       return;
     }
 
-    const response = await UsuarioService.updatePassword(
+    const response = await UsuarioService.updatePasswordLogin(
+      id_usuario,
+      newPassword,
+      oldPassword
+    );
+
+    res.status(response.statusCode).json(response);
+  }
+
+  static async updatePasswordConta(req: Request, res: Response) {
+    const { newPassword, oldPassword } = req.body;
+    const id_usuario = req.session.id_usuario;
+    if (!id_usuario || typeof id_usuario !== "number") {
+      res.status(503).json({
+        status: "error",
+        statusCode: 503,
+        msg: "Usuário não autentificado",
+      });
+      return;
+    }
+
+    const response = await UsuarioService.updatePasswordLogin(
       id_usuario,
       newPassword,
       oldPassword

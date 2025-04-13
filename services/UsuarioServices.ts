@@ -1,7 +1,6 @@
 import { UsuarioModel, ContaModel, EnderecoModel } from "../models";
 import AuthService from "./AuthService";
 import Redis from "ioredis";
-import sequelize from "../config/database";
 
 const redisClient = new Redis({ host: "127.0.0.1", port: 6379 });
 
@@ -14,6 +13,7 @@ class UsuarioService {
           id_usuario: id_usuario,
           is_inactive: false,
         },
+        // Inclui o endereco e conta referente ao usuário
         include: [
           {
             model: EnderecoModel,
@@ -28,6 +28,7 @@ class UsuarioService {
         ],
       });
 
+      // Verifica se o usuário existe e foi coletado corretamente
       if (!usuario)
         return {
           status: "error",
@@ -44,6 +45,7 @@ class UsuarioService {
       };
       usuario;
     } catch (e) {
+      // Mensagem genérica para erros no servidor
       return {
         status: "error",
         statusCode: 500,
@@ -54,6 +56,7 @@ class UsuarioService {
 
   static async updateEmail(id_usuario: number, email: string) {
     try {
+      // Verificar se o email foi verificado antes de usa-lo
       const redisKey = `verify_code:${email}`;
       const verification = await redisClient.hget(redisKey, "verification");
       if (!verification) {
@@ -72,6 +75,7 @@ class UsuarioService {
         };
       }
 
+      // Coleta o usuario e verifica se ele foi importado corretamente
       const usuario = await UsuarioModel.findByPk(id_usuario);
       if (!usuario)
         return {
@@ -80,10 +84,12 @@ class UsuarioService {
           msg: "Usuário não encontrado.",
         };
 
+      // Verifica se o usuario e já existe no banco de dados
       const response = await AuthService.emailInUse(email);
       if (response.status === "error")
         return { status: "error", statusCode: 400, msg: "Email já está uso." };
 
+      // Atualiza o usuario no banco de dados
       usuario.update({
         email: email,
       });
@@ -94,6 +100,7 @@ class UsuarioService {
         msg: "Email atualizado com sucesso",
       };
     } catch (e) {
+      // Mensagem genérica para erros no servidor
       return {
         status: "success",
         statusCode: 200,
@@ -104,6 +111,7 @@ class UsuarioService {
 
   static async updateTelefone(id_usuario: number, telefone: string) {
     try {
+      // Coleta o usuario e verifica se ele foi importado corretamente
       const usuario = await UsuarioModel.findByPk(id_usuario);
       if (!usuario) {
         return {
@@ -113,6 +121,9 @@ class UsuarioService {
         };
       }
 
+      /*  Adicionar logica de verificação de telefone com envio de código por número de telefone */
+
+      // Atuliza o telefone do usuario no banco de dados
       usuario.update({ telefone: telefone });
 
       return {
@@ -121,6 +132,7 @@ class UsuarioService {
         msg: "Telefone atualizado com sucesso",
       };
     } catch (e) {
+      // Mensagem genérica para erros no servidor
       return {
         status: "error",
         statusCode: 500,
@@ -135,6 +147,7 @@ class UsuarioService {
     value: EnderecoModel[K]
   ) {
     try {
+      // Coleta o endereço e verifica se ele foi importado corretamente
       const endereco = await EnderecoModel.findOne({
         where: { id_usuario },
       });
@@ -146,6 +159,7 @@ class UsuarioService {
         };
       }
 
+      // Verifica se o valor no banco de dados é igual ao valor passado pelo usuario, para evitar querys desnecessárias
       if (endereco[field] === value) {
         return {
           status: "error",
@@ -156,6 +170,7 @@ class UsuarioService {
         };
       }
 
+      // Atualiza o campo passado no banco de dados
       await endereco.update({ [field]: value });
 
       return {
@@ -172,7 +187,7 @@ class UsuarioService {
     }
   }
 
-  static async updatePassword(
+  static async updatePasswordLogin(
     id_usuario: number,
     newPassword: string,
     oldPassword: string
@@ -196,6 +211,45 @@ class UsuarioService {
       }
 
       usuario.update({ password: newPassword });
+
+      return {
+        status: "success",
+        statusCode: 200,
+        msg: "Senha atualizada com sucesso",
+      };
+    } catch (e) {
+      return {
+        status: "error",
+        statusCode: 500,
+        msg: "Erro interno no sistema. Por favor tente novamente mais tarde",
+      };
+    }
+  }
+
+  static async updatePasswordConta(
+    id_usuario: number,
+    newPassword: string,
+    oldPassword: string
+  ) {
+    try {
+      const conta = await ContaModel.findOne({ where: { id_usuario }});
+      if (!conta) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Usuário não encontrado",
+        };
+      }
+
+      if (!(await conta).validPassword(oldPassword)) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Senha inválida",
+        };
+      }
+
+      conta.update({ password: newPassword });
 
       return {
         status: "success",
