@@ -3,6 +3,7 @@ import Endereco from "../models/EnderecoModel";
 import sequelize from "../config/database";
 import Redis from "ioredis";
 import { sendEmail } from "../utils/sendEmail";
+import crypto from "crypto";
 
 const redisClient = new Redis({ host: "127.0.0.1", port: 6379 });
 
@@ -12,6 +13,11 @@ class AuthService {
     try {
       const redisKey = `verify_code:${usuarioReq.email}`;
       const verification = await redisClient.hget(redisKey, "verification");
+
+      const chave_transferencia = crypto
+        .createHash("sha256")
+        .update(`${usuarioReq.cpf}-${usuarioReq.email}-${Date.now()}`)
+        .digest("hex");
 
       if (!verification) {
         return {
@@ -53,16 +59,22 @@ class AuthService {
 
       const usuario = await UsuarioModel.create(usuarioReq, { transaction });
 
-      const endereco = await Endereco.create(
-        { ...enderecoReq, id_usuario: usuario.id_usuario },
-        { transaction }
-      );
+      Promise.all([
+        await Endereco.create(
+          { ...enderecoReq, id_usuario: usuario.id_usuario },
+          { transaction }
+        ),
 
-      const conta = await ContaModel.create(
-        { ...contaReq, id_usuario: usuario.id_usuario },
-        { transaction }
-      );
-
+        await ContaModel.create(
+          {
+            ...contaReq,
+            id_usuario: usuario.id_usuario,
+            chave_transferencia: chave_transferencia,
+          },
+          { transaction }
+        ),
+      ]);
+      
       await transaction.commit();
 
       return {
@@ -103,7 +115,11 @@ class AuthService {
         ],
       });
 
-      if (!usuario || !(await usuario.validPassword(passwordReq)) || !usuario.conta_bancaria) {
+      if (
+        !usuario ||
+        !(await usuario.validPassword(passwordReq)) ||
+        !usuario.conta_bancaria
+      ) {
         return {
           status: "error",
           statusCode: 400,
@@ -119,7 +135,7 @@ class AuthService {
         usuario: usuarioRetornar,
       };
     } catch (e) {
-      console.log(e)
+      console.log(e);
       return {
         status: "error",
         statusCode: 500,
