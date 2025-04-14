@@ -76,7 +76,7 @@ class UsuarioController {
       return;
     }
 
-    const response = await UsuarioService.updatePasswordLogin(
+    const response = await UsuarioService.updatePasswordConta(
       id_usuario,
       newPassword,
       oldPassword
