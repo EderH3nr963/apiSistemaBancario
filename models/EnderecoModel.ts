@@ -15,7 +15,7 @@ class EnderecoModel extends Model<
   public rua!: string;
   public numero!: number;
   public cidade!: string;
-  public estado!: string;
+  public uf!: string;
   public id_usuario!: number;
 }
 
@@ -39,8 +39,8 @@ EnderecoModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    estado: {
-      type: DataTypes.STRING,
+    uf: {
+      type: DataTypes.CHAR(2),
       allowNull: false,
     },
     id_usuario: {

@@ -1,5 +1,3 @@
--- Active: 1743824447804@@127.0.0.1@3306@test
-
 drop database banco_financeiro
 
 Create database banco_financeiro;
@@ -24,11 +22,11 @@ CREATE TABLE endereco (
     rua VARCHAR(120),
     numero INT,
     cidade VARCHAR(50),
-    estado VARCHAR(20),
+    uf CHAR(2),
     id_usuario INT NOT NULL,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+    FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
 );
 
 CREATE TABLE conta_bancaria (
@@ -38,21 +36,30 @@ CREATE TABLE conta_bancaria (
     tipo_conta ENUM('corrente', 'poupanca') NOT NULL,
     saldo DECIMAL(13, 2) DEFAULT 0.0,
     chave_transferencia VARCHAR(100) UNIQUE, -- você pode gerar isso no app e usar cpf/email etc
-    status_conta ENUM('bloqueada', 'fechada', 'ativa') DEFAULT 'ativa',
+    status_conta ENUM(
+        'bloqueada',
+        'fechada',
+        'ativa'
+    ) DEFAULT 'ativa',
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+    FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
 );
 
 CREATE TABLE pagamento (
     id_pagamento INT PRIMARY KEY AUTO_INCREMENT,
     id_conta_destino INT NOT NULL,
     valor DECIMAL(10, 2) NOT NULL,
-    status_pagamento ENUM('pendente', 'rejeitada', 'aceita', 'cancelada'), -- troquei " por '
+    status_pagamento ENUM(
+        'pendente',
+        'rejeitada',
+        'aceita',
+        'cancelada'
+    ), -- troquei " por '
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     chave_pagamento VARCHAR(150) NOT NULL,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_conta_destino) REFERENCES conta_bancaria(id_conta)
+    FOREIGN KEY (id_conta_destino) REFERENCES conta_bancaria (id_conta)
 );
 
 CREATE TABLE transacao (
@@ -65,8 +72,8 @@ CREATE TABLE transacao (
     status ENUM('cancelada', 'aprovada') DEFAULT 'aprovada',
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_conta_origem) REFERENCES conta_bancaria(id_conta),
-    FOREIGN KEY (id_conta_destino) REFERENCES conta_bancaria(id_conta)
+    FOREIGN KEY (id_conta_origem) REFERENCES conta_bancaria (id_conta),
+    FOREIGN KEY (id_conta_destino) REFERENCES conta_bancaria (id_conta)
 );
 
 Create Table agencia (
@@ -85,7 +92,6 @@ Create Table emprestimo (
     qtde_parcela int,
     data_emp date not null
 );
-
 
 Create Table cartao (
     id_cartao int primary key auto_increment,
@@ -133,5 +139,19 @@ Create Table cofrinho (
 
 select * from usuario, endereco;
 
-update usuario set email = "ederhenriquevicentejust963@gmail.com" where id_usuario = 1;
-SELECT id_usuario, cpf, nome, email, telefone, hash_password_login FROM usuario WHERE email = "ederh@gmail.com"
+update usuario
+set
+    email = "ederhenriquevicentejust963@gmail.com"
+where
+    id_usuario = 1;
+
+SELECT
+    id_usuario,
+    cpf,
+    nome,
+    email,
+    telefone,
+    hash_password_login
+FROM usuario
+WHERE
+    email = "ederh@gmail.com"

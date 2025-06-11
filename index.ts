@@ -1,6 +1,7 @@
 import express from "express";
 import session from "express-session";
 import dotenv from "dotenv";
+import cors from "cors";
 
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
@@ -18,6 +19,13 @@ const app = express();
 
 dotenv.config();
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 app.use(
   session({

@@ -11,6 +11,7 @@ export async function sendEmail(email: string, subject: string, html: string) {
     },
   });
 
+  console.log(process.env.EMAIL_NODEMAILER, process.env.PASS_NODEMAILER);
   const mailOptions = {
     from: `"Sistema Bancário" <${process.env.MAIL_USER}>`,
     to: email,

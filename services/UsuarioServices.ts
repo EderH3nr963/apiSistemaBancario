@@ -58,9 +58,15 @@ class UsuarioService {
       // Pega o usuário no banco de dados
       const conta = await ContaModel.findOne({
         where: { chave_transferencia: chave_transferencia },
-        attributes: { exclude: ["password", "saldo", "chave_transferencia", "status_conta"] },
-        include: { model: UsuarioModel, as: "usuario", attributes: {include: ["full_name", "email"]} }
-      })
+        attributes: {
+          exclude: ["password", "saldo", "chave_transferencia", "status_conta"],
+        },
+        include: {
+          model: UsuarioModel,
+          as: "usuario",
+          attributes: ["full_name", "email"],
+        },
+      });
 
       // Verifica se o usuário existe e foi coletado corretamente
       if (!conta)
@@ -264,7 +270,7 @@ class UsuarioService {
     oldPassword: string
   ) {
     try {
-      const conta = await ContaModel.findOne({ where: { id_usuario }});
+      const conta = await ContaModel.findOne({ where: { id_usuario } });
       if (!conta) {
         return {
           status: "error",

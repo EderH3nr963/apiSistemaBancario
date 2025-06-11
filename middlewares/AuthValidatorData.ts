@@ -1,4 +1,5 @@
 import { body } from "express-validator";
+import { ufs } from "../utils/estados";
 
 const AuthValidatorData = {
   register: [
@@ -12,9 +13,9 @@ const AuthValidatorData = {
         "A senha deve conter letras maiusculas e minuscular, números e caracteres especiais"
       ),
     body("usuario.confirm_password").custom((value, { req }) => {
-      if (value !== req.body.usuario.password)
+      if (value !== req.body.usuario.password) {
         throw new Error("As senha não coincidem");
-
+      }
       return true;
     }),
     body("usuario.telefone")
@@ -44,11 +45,19 @@ const AuthValidatorData = {
       .withMessage("O campo Cidade não pode ser vazio")
       .isString()
       .withMessage("Cidade inválida"),
-    body("endereco.estado")
+    body("endereco.uf")
       .exists()
       .withMessage("O campo Estado não pode ser vazio")
       .isString()
-      .withMessage("Estado inválido"),
+      .withMessage("Estado inválido")
+      .custom((value) => {
+        if (!ufs.includes(value.toUpperCase())) {
+          throw new Error(
+            "UF inválida. Use uma sigla de estado brasileira válida."
+          );
+        }
+        return true;
+      }),
     body("conta.tipo_conta").custom((value) => {
       if (value !== "corrente" && value !== "poupanca")
         throw new Error("Tipo de conta inválida");
@@ -58,12 +67,6 @@ const AuthValidatorData = {
     body("conta.password")
       .matches(/^\d{6}$/)
       .withMessage("A senha deve conter 6 digitos numéricos"),
-    body("conta.confirm_password").custom((value, { req }) => {
-      if (value !== req.body.conta.password)
-        throw new Error("As senha não coincidem");
-
-      return true;
-    }),
   ],
 
   login: [

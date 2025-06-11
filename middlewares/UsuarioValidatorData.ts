@@ -1,4 +1,5 @@
 import { body } from "express-validator";
+import { ufs } from "../utils/estados";
 
 const UsuarioValidatorData = {
   updatePassword: [
@@ -26,14 +27,20 @@ const UsuarioValidatorData = {
   ],
 
   updateEndereco: [
-    body("field").custom((value) => {
+    body("field").custom((value, { req }) => {
       if (
         value !== "rua" &&
         value !== "numero" &&
         value !== "cidade" &&
-        value !== "estado"
+        value !== "uf"
       ) {
         throw new Error("Campo de atualização inválido");
+      }
+
+      if (value == "uf" && !ufs.includes(req.body.value.toUpperCase())) {
+        throw new Error(
+          "UF inválida. Use uma sigla de estado brasileira válida."
+        );
       }
 
       return true;

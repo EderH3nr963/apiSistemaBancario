@@ -19,9 +19,11 @@ class UsuarioController {
   }
 
   static async getByChaveTransferencia(req: Request, res: Response) {
-    const chave_transferencia = req.params;
+    const { chave_transferencia } = req.params;
 
-    const response = await UsuarioService.getByChaveTransferencia(chave_transferencia.toString());
+    const response = await UsuarioService.getByChaveTransferencia(
+      chave_transferencia as string
+    );
 
     res.status(response.statusCode).json(response);
   }

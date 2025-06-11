@@ -74,7 +74,7 @@ class AuthService {
           { transaction }
         ),
       ]);
-      
+
       await transaction.commit();
 
       return {

@@ -4,10 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon --exec ts-node index.ts"
+    "start": "ts-node index.ts",
+    "dev": "nodemon --exec ts-node index.ts"
   },
   "dependencies": {
     "@types/connect-redis": "^0.0.23",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
     "@types/express-session": "^1.18.1",
     "@types/express-validator": "^3.0.2",
@@ -16,6 +18,7 @@
     "bcrypt": "^5.1.1",
     "bcrypt-ts": "^6.0.0",
     "connect-redis": "5",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",

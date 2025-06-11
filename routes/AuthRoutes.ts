@@ -2,7 +2,7 @@ import express from "express";
 import AuthController from "../controllers/AuthController";
 import AuthValidatorData from "../middlewares/AuthValidatorData";
 import MyValidatorResult from "../middlewares/MyValidatorResult";
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 const router = express.Router();
 
 router.post(
@@ -19,14 +19,14 @@ router.post(
 );
 
 router.get(
-  "/email-in-use",
-  [body("email").isEmail().withMessage("Email inválido")],
+  "/email-in-use/:email",
+  [param("email").isEmail().withMessage("Email inválido")],
   MyValidatorResult,
   AuthController.emailInUse
 );
 router.get(
-  "/cpf-in-use",
-  body("cpf")
+  "/cpf-in-use/:cpf",
+  param("cpf")
     .matches(/^\d{11}$/)
     .withMessage("CPF inválido"),
   MyValidatorResult,
@@ -34,8 +34,8 @@ router.get(
 );
 
 router.get(
-  "/send-code-verification",
-  [body("email").isEmail().withMessage("Email inválido")],
+  "/send-code-verification/:email",
+  [param("email").isEmail().withMessage("Email inválido")],
   MyValidatorResult,
   AuthController.sendCodeVerification
 );

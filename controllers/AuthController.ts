@@ -62,7 +62,7 @@ class AuthController {
   }
 
   static async emailInUse(req: Request, res: Response) {
-    const { email } = req.body;
+    const { email } = req.params;
 
     const response = await AuthService.emailInUse(email);
 
@@ -70,7 +70,7 @@ class AuthController {
   }
 
   static async cpfInUse(req: Request, res: Response) {
-    const { cpf } = req.body;
+    const { cpf } = req.params;
 
     const response = await AuthService.cpfInUse(cpf);
 
@@ -86,7 +86,7 @@ class AuthController {
   }
 
   static async sendCodeVerification(req: Request, res: Response) {
-    const { email } = req.body;
+    const { email } = req.params;
 
     const response = await AuthService.sendCodeVerification(email);
 

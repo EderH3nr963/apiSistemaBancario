@@ -1,11 +1,15 @@
 import express from "express";
 import UsuarioController from "../controllers/UsuarioController";
-import { body, param } from "express-validator";
+import { body } from "express-validator";
 import MyValidatorResult from "../middlewares/MyValidatorResult";
 import UsuarioValidatorData from "../middlewares/UsuarioValidatorData";
+
 const router = express.Router();
 
+// Rotas fixas primeiro
 router.get("/", UsuarioController.get);
+router.get("/verify-session", UsuarioController.verifySession);
+router.delete("/logout", UsuarioController.logout);
 
 router.patch(
   "/email",
@@ -31,7 +35,6 @@ router.patch(
   MyValidatorResult,
   UsuarioController.updateTelefone
 );
-
 router.patch(
   "/endereco",
   UsuarioValidatorData.updateEndereco,
@@ -39,7 +42,7 @@ router.patch(
   UsuarioController.updateEndereco
 );
 
-router.get("/verify-session", UsuarioController.verifySession);
-router.delete("/logout", UsuarioController.logout);
+// Rotas dinâmicas por último
+router.get("/:chave_transferencia", UsuarioController.getByChaveTransferencia);
 
 export default router;
