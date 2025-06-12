@@ -25,6 +25,14 @@ class TransacaoService {
         };
       }
 
+      if (contaDestinario.id_conta === contaRemetente.id_conta) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Não é possível realizar uma transação entre 2 usuários iguais",
+        };
+      }
+
       if (!contaRemetente.validPassword(passwordRemetente)) {
         return {
           status: "error",
