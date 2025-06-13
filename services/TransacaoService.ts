@@ -29,7 +29,7 @@ class TransacaoService {
         return {
           status: "error",
           statusCode: 400,
-          msg: "Não é possível realizar uma transação entre 2 usuários iguais",
+          msg: "Não é possível enviar dinheiro para você mesmo",
         };
       }
 

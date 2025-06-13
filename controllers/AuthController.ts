@@ -20,6 +20,8 @@ class AuthController {
   static async login(req: Request, res: Response) {
     const { email, password } = req.body;
 
+    console.log(req.session);
+
     if (
       typeof req.session.tentativa_login?.count === "number" &&
       req.session.tentativa_login?.count > 3 &&
