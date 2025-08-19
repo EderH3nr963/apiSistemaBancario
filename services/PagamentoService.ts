@@ -62,7 +62,11 @@ class PagamentoService {
         where: { chave_pagamento: chave_pagamento },
       });
 
-      if (!pagamento || pagamento.status_pagamento === "cancelada") {
+      if (
+        !pagamento ||
+        pagamento.status_pagamento === "cancelada" ||
+        pagamento.status_pagamento === "aceita"
+      ) {
         return {
           status: "error",
           statusCode: 400,

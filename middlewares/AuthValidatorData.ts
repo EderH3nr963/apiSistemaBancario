@@ -70,7 +70,13 @@ const AuthValidatorData = {
   ],
 
   login: [
-    body("email").isEmail().withMessage("Email ou senha inválidos"),
+    body("cpf")
+      .exists()
+      .withMessage("Campo CPF não pode ser nulo.")
+      .matches(/^\d{11}$/)
+      .withMessage(
+        "CPF deve conter exatamente 11 dígitos numéricos (sem pontos ou traços)."
+      ),
     body("password")
       .isLength({ min: 8, max: 16 })
       .withMessage("Email ou senha inválidos")

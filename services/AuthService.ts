@@ -93,12 +93,12 @@ class AuthService {
     }
   }
 
-  static async login(email: string, passwordReq: string) {
+  static async login(cpf: string, passwordReq: string) {
     try {
       // Pega o usuário no banco de dados
       const usuario = await UsuarioModel.findOne({
         where: {
-          email: email,
+          cpf: cpf,
           is_inactive: false,
         },
         include: [
@@ -302,6 +302,7 @@ class AuthService {
   static async verifyCode(email: string, code: number) {
     const redisKey = `verify_code:${email}`;
     try {
+
       const verification = await redisClient.hget(redisKey, "verification");
       const redisCode = await redisClient.hget(redisKey, "code");
 
@@ -312,7 +313,7 @@ class AuthService {
           msg: "Código inválido ou expirado",
         };
       }
-
+      
       if (redisCode !== code.toString()) {
         return {
           status: "error",
@@ -331,6 +332,7 @@ class AuthService {
 
       // Atualiza como verificado
       await redisClient.hset(redisKey, "verification", "1");
+
 
       return {
         status: "success",

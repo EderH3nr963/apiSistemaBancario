@@ -18,14 +18,14 @@ class AuthController {
   }
 
   static async login(req: Request, res: Response) {
-    const { email, password } = req.body;
+    const { cpf, password } = req.body;
 
     console.log(req.session);
 
     if (
       typeof req.session.tentativa_login?.count === "number" &&
       req.session.tentativa_login?.count > 3 &&
-      req.session.tentativa_login?.email === email
+      req.session.tentativa_login?.cpf === cpf
     ) {
       res.status(503).json({
         status: "error",
@@ -36,10 +36,10 @@ class AuthController {
     }
 
     if (!req.session.tentativa_login) {
-      req.session.tentativa_login = { email, count: 0 };
+      req.session.tentativa_login = { cpf, count: 0 };
     }
 
-    const response = await AuthService.login(email, password);
+    const response = await AuthService.login(cpf, password);
 
     switch (response.status) {
       case "success":
@@ -52,8 +52,8 @@ class AuthController {
         break;
 
       case "error":
-        if (req.session.tentativa_login.email !== email) {
-          req.session.tentativa_login = { email, count: 1 };
+        if (req.session.tentativa_login.cpf !== cpf) {
+          req.session.tentativa_login = { cpf, count: 1 };
         } else {
           req.session.tentativa_login.count += 1;
         }

@@ -2,7 +2,7 @@ import session from "express-session";
 
 interface TentativaLogin {
   count: number;
-  email: string;
+  cpf: string;
 }
 
 declare module "express-session" {

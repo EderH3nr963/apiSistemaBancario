@@ -22,8 +22,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    credentials: true,
+    origin: "*",
   })
 );
 
@@ -44,6 +43,6 @@ app.use("/api/v1/usuario", UsuarioRoutes);
 app.use("/api/v1/transacao", TransacaoRoutes);
 app.use("/api/v1/pagamento", PagamentoRoutes);
 
-app.listen(3000, () => {
+app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor rodando na porta 3000");
 });
