@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import PagamentoService from "../services/PagamentoService";
 
+import { AuthRequest } from "../middlewares/AuthMiddleware";
+
 class PagamentoController {
   static async set(req: Request, res: Response) {
     const { valor } = req.body;
-    const id_conta = req.session.id_conta;
+    const id_conta = req.user?.id_conta_bancaria;
     if (!id_conta || typeof id_conta !== "number") {
       res.status(503).json({
         status: "error",
@@ -21,7 +23,7 @@ class PagamentoController {
 
   static async get(req: Request, res: Response) {
     const { chave_pagamento } = req.params;
-    const id_conta = req.session.id_conta;
+    const id_conta = req.user?.id_conta_bancaria;
     if (!id_conta || typeof id_conta !== "number") {
       res.status(503).json({
         status: "error",
@@ -38,7 +40,7 @@ class PagamentoController {
 
   static async pay(req: Request, res: Response) {
     const { password, barcode } = req.body;
-    const id_conta = req.session.id_conta;
+    const id_conta = req.user?.id_conta_bancaria;
     if (!id_conta || typeof id_conta !== "number") {
       res.status(503).json({
         status: "error",
@@ -55,7 +57,7 @@ class PagamentoController {
 
   static async cancel(req: Request, res: Response) {
     const { chave_pagamento } = req.params;
-    const id_conta = req.session.id_conta;
+    const id_conta = req.user?.id_conta_bancaria;
     if (!id_conta || typeof id_conta !== "number") {
       res.status(503).json({
         status: "error",

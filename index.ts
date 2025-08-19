@@ -6,12 +6,15 @@ import cors from "cors";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
 
+import { AuthRequest } from "./middlewares/AuthMiddleware";
+
 import AuthRoutes from "./routes/AuthRoutes";
 import UsuarioRoutes from "./routes/UsuarioRoutes";
 import TransacaoRoutes from "./routes/TransacaoRoutes";
 import PagamentoRoutes from "./routes/PagamentoRoutes";
 
 import "./types/expressSessionType";
+import { authMiddleware } from "./middlewares/AuthMiddleware";
 
 const redisClient = new Redis();
 const RedisStore = connectRedis(session);
@@ -22,7 +25,10 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      callback(null, origin || "*"); // devolve a origem real
+    },
+    credentials: true
   })
 );
 
@@ -39,9 +45,9 @@ app.use(
 );
 
 app.use("/api/v1/auth", AuthRoutes);
-app.use("/api/v1/usuario", UsuarioRoutes);
-app.use("/api/v1/transacao", TransacaoRoutes);
-app.use("/api/v1/pagamento", PagamentoRoutes);
+app.use("/api/v1/usuario", authMiddleware, UsuarioRoutes);
+app.use("/api/v1/transacao", authMiddleware, TransacaoRoutes);
+app.use("/api/v1/pagamento", authMiddleware, PagamentoRoutes);
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor rodando na porta 3000");

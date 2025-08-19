@@ -2,6 +2,7 @@ import { UsuarioModel, ContaModel, EnderecoModel } from "../models";
 import Endereco from "../models/EnderecoModel";
 import sequelize from "../config/database";
 import Redis from "ioredis";
+import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/sendEmail";
 import crypto from "crypto";
 
@@ -128,11 +129,21 @@ class AuthService {
       }
       const { password, ...usuarioRetornar } = usuario.dataValues;
 
+      const jwt_token = jwt.sign(
+        {
+          id_usuario: usuarioRetornar.id_usuario,
+          id_conta_bancaria: usuarioRetornar.conta_bancaria?.id_conta
+        },
+        "MorangoOuBanana", {
+        expiresIn: "24h"
+      })
+
       return {
         status: "success",
         statusCode: 200,
         msg: "Sucesso fazer login no banco!",
         usuario: usuarioRetornar,
+        token: jwt_token
       };
     } catch (e) {
       console.log(e);
@@ -313,7 +324,7 @@ class AuthService {
           msg: "Código inválido ou expirado",
         };
       }
-      
+
       if (redisCode !== code.toString()) {
         return {
           status: "error",

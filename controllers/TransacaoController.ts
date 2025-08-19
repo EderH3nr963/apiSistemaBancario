@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import TransacaoService from "../services/TransacaoService";
+import { AuthRequest } from "../middlewares/AuthMiddleware";
 
 class TransacaoController {
   static async transferMoney(req: Request, res: Response) {
     const { password, value, chave_transferencia, descricao } = req.body;
-    const id_conta = req.session.id_conta;
+    const id_conta = req.user?.id_conta_bancaria;
     if (!id_conta || typeof id_conta !== "number") {
       res.status(503).json({
         status: "error",
@@ -38,7 +39,7 @@ class TransacaoController {
       return;
     }
 
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",
@@ -57,7 +58,7 @@ class TransacaoController {
   }
 
   static async getAll(req: Request, res: Response) {
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",

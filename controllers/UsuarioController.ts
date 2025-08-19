@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import UsuarioService from "../services/UsuarioServices";
+import { AuthRequest } from "../middlewares/AuthMiddleware";
 
 class UsuarioController {
   static async get(req: Request, res: Response) {
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",
@@ -30,7 +31,7 @@ class UsuarioController {
 
   static async updateEmail(req: Request, res: Response) {
     const { email } = req.body;
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",
@@ -47,7 +48,7 @@ class UsuarioController {
 
   static async updatePasswordUsuario(req: Request, res: Response) {
     const { newPassword, oldPassword } = req.body;
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",
@@ -68,7 +69,7 @@ class UsuarioController {
 
   static async updatePasswordConta(req: Request, res: Response) {
     const { newPassword, oldPassword } = req.body;
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",
@@ -89,7 +90,7 @@ class UsuarioController {
 
   static async updateTelefone(req: Request, res: Response) {
     const { telefone } = req.body;
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",
@@ -106,7 +107,7 @@ class UsuarioController {
 
   static async updateEndereco(req: Request, res: Response) {
     const { field, value } = req.body;
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",
@@ -126,7 +127,7 @@ class UsuarioController {
   }
 
   static async verifySession(req: Request, res: Response) {
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "error",
@@ -144,7 +145,7 @@ class UsuarioController {
   }
 
   static async logout(req: Request, res: Response) {
-    const id_usuario = req.session.id_usuario;
+    const id_usuario = req.user?.id_usuario;
     if (!id_usuario || typeof id_usuario !== "number") {
       res.status(503).json({
         status: "success",

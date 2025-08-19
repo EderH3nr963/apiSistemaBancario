@@ -1,4 +1,5 @@
 import session from "express-session";
+import express from "express";
 
 interface TentativaLogin {
   count: number;
