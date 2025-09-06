@@ -29,6 +29,26 @@ class UsuarioController {
     res.status(response.statusCode).json(response);
   }
 
+  static async getByCpf(req: Request, res: Response) {
+    const { cpf } = req.params;
+
+    const response = await UsuarioService.getByCpf(
+      cpf as string
+    );
+
+    res.status(response.statusCode).json(response);
+  }
+
+  static async getByPhone(req: Request, res: Response) {
+    const { phone } = req.params;
+
+    const response = await UsuarioService.getByPhone(
+      phone as string
+    );
+
+    res.status(response.statusCode).json(response);
+  }
+
   static async updateEmail(req: Request, res: Response) {
     const { email } = req.body;
     const id_usuario = req.user?.id_usuario;

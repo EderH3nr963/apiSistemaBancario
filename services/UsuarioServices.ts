@@ -64,7 +64,85 @@ class UsuarioService {
         include: {
           model: UsuarioModel,
           as: "usuario",
-          attributes: ["full_name", "email"],
+          attributes: ["full_name"],
+        },
+      });
+
+      // Verifica se o usuário existe e foi coletado corretamente
+      if (!conta)
+        return {
+          status: "error",
+          statusCode: 500,
+          msg: "Conta bancária não encontrada",
+        };
+
+      return {
+        status: "success",
+        statusCode: 200,
+        msg: "Usuário encontrado.",
+        conta: conta,
+      };
+    } catch (e) {
+      // Mensagem genérica para erros no servidor
+      return {
+        status: "error",
+        statusCode: 500,
+        msg: "Usuario não encontrado",
+      };
+    }
+  }
+
+  static async getByCpf(cpf: string) {
+    try {
+      // Pega o usuário no banco de dados
+      const conta = await ContaModel.findOne({
+        where: { "$usuario.cpf$": cpf },
+        attributes: {
+          exclude: ["password", "saldo", "chave_transferencia", "status_conta"],
+        },
+        include: {
+          model: UsuarioModel,
+          as: "usuario",
+          attributes: ["full_name"],
+        },
+      });
+
+      // Verifica se o usuário existe e foi coletado corretamente
+      if (!conta)
+        return {
+          status: "error",
+          statusCode: 500,
+          msg: "Conta bancária não encontrada",
+        };
+
+      return {
+        status: "success",
+        statusCode: 200,
+        msg: "Usuário encontrado.",
+        conta: conta,
+      };
+    } catch (e) {
+      // Mensagem genérica para erros no servidor
+      return {
+        status: "error",
+        statusCode: 500,
+        msg: "Usuario não encontrado",
+      };
+    }
+  }
+
+  static async getByPhone(cpf: string) {
+    try {
+      // Pega o usuário no banco de dados
+      const conta = await ContaModel.findOne({
+        where: { "$usuario.telefone$": cpf },
+        attributes: {
+          exclude: ["password", "saldo", "chave_transferencia", "status_conta"],
+        },
+        include: {
+          model: UsuarioModel,
+          as: "usuario",
+          attributes: ["full_name"],
         },
       });
 

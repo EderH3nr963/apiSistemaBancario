@@ -1,6 +1,7 @@
 import { UsuarioModel, ContaModel, TransacaoModel } from "../models";
 
 import sequelize from "../config/database";
+import { Op } from "sequelize";
 
 class TransacaoService {
   static async transferMoney(
@@ -14,8 +15,22 @@ class TransacaoService {
     try {
       const contaRemetente = await ContaModel.findByPk(id_conta);
       const contaDestinario = await ContaModel.findOne({
-        where: { chave_transferencia: chave_transferencia },
+        where: {
+          [Op.or]: [
+            { chave_transferencia: chave_transferencia },
+            {
+              "$usuario.cpf$": chave_transferencia
+            },
+            {
+              "$usuario.telefone$": chave_transferencia
+            }
+          ]
+        },
+        include: [
+          { model: UsuarioModel, as: "usuario" }
+        ]
       });
+
 
       if (!contaDestinario || !contaRemetente) {
         return {

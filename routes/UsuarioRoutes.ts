@@ -43,6 +43,8 @@ router.patch(
 );
 
 // Rotas dinâmicas por último
-router.get("/:chave_transferencia", UsuarioController.getByChaveTransferencia);
+router.get("/chave-pix/:chave_transferencia", UsuarioController.getByChaveTransferencia);
+router.get("/cpf/:cpf", UsuarioController.getByCpf);
+router.get("/phone/:phone", UsuarioController.getByPhone);
 
 export default router;
