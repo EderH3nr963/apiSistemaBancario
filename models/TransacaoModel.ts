@@ -19,6 +19,9 @@ class TransacaoModel extends Model<
   declare tipo: string;
   declare valor: number;
   declare descricao: string;
+  declare data: string;
+  declare hora: string;
+  declare tipoBanco: string;
   declare status: CreationOptional<string>;
   public conta_origem?: ContaModel;
   public conta_destino?: ContaModel;
@@ -36,7 +39,7 @@ TransacaoModel.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "conta", // nome da tabela de contas
+        model: "conta",
         key: "id_conta",
       },
       onUpdate: "CASCADE",
@@ -53,6 +56,18 @@ TransacaoModel.init(
       onDelete: "SET NULL",
     },
     tipo: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    data: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+    hora: {
+      type: DataTypes.TIME,
+      allowNull: false,
+    },
+    tipoBanco: {
       type: DataTypes.STRING,
       allowNull: false,
     },
