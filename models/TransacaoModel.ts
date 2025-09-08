@@ -21,7 +21,6 @@ class TransacaoModel extends Model<
   declare descricao: string;
   declare data: string;
   declare hora: string;
-  declare tipoBanco: string;
   declare status: CreationOptional<string>;
   public conta_origem?: ContaModel;
   public conta_destino?: ContaModel;
@@ -65,10 +64,6 @@ TransacaoModel.init(
     },
     hora: {
       type: DataTypes.TIME,
-      allowNull: false,
-    },
-    tipoBanco: {
-      type: DataTypes.STRING,
       allowNull: false,
     },
     valor: {

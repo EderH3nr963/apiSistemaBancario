@@ -80,7 +80,6 @@ class TransacaoService {
             valor: value,
             data: new Date().toISOString().split("T")[0],
             hora: new Date().toISOString().split("T")[1],
-            tipoBanco: "",
             descricao: descricao || "",
             tipo: "transferência",
           },

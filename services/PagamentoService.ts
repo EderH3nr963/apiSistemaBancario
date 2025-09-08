@@ -195,7 +195,6 @@ class PagamentoService {
             valor: pagamento.valor,
             data: new Date().toISOString().split("T")[0],
             hora: new Date().toISOString().split("T")[1].split(".")[0],
-            tipoBanco: "",
             descricao: "",
             tipo: "pagamento",
           },
