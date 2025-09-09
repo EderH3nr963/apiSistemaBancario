@@ -78,7 +78,7 @@ class TransacaoService {
             id_conta_destino: contaDestinario.id_conta,
             id_conta_origem: contaRemetente.id_conta,
             valor: value,
-            data: new Date().toLocaleDateString("pt-BR"),
+            date: new Date().toLocaleDateString("pt-BR"),
             hora: new Date().toLocaleTimeString("pt-BR"), 
             descricao: descricao || "",
             tipo: "transferência",

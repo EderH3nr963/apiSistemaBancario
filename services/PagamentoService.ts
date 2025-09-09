@@ -193,7 +193,7 @@ class PagamentoService {
             id_conta_destino: conta_destino.id_conta,
             id_conta_origem: conta_origem.id_conta,
             valor: pagamento.valor,
-            data: new Date().toISOString().split("T")[0],
+            date: new Date().toISOString().split("T")[0],
             hora: new Date().toISOString().split("T")[1].split(".")[0],
             descricao: "",
             tipo: "pagamento",

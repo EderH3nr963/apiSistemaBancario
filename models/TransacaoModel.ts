@@ -19,7 +19,7 @@ class TransacaoModel extends Model<
   declare tipo: string;
   declare valor: number;
   declare descricao: string;
-  declare data: string;
+  declare date: string;
   declare hora: string;
   declare status: CreationOptional<string>;
   public conta_origem?: ContaModel;
@@ -58,7 +58,7 @@ TransacaoModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    data: {
+    date: {
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
