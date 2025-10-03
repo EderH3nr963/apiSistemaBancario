@@ -12,6 +12,7 @@ import AuthRoutes from "./routes/AuthRoutes";
 import UsuarioRoutes from "./routes/UsuarioRoutes";
 import TransacaoRoutes from "./routes/TransacaoRoutes";
 import PagamentoRoutes from "./routes/PagamentoRoutes";
+import EmprestimoRoutes from "./routes/EmprestimoRoutes";
 
 import "./types/expressSessionType";
 import { authMiddleware } from "./middlewares/AuthMiddleware";
@@ -48,6 +49,7 @@ app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/usuario", authMiddleware, UsuarioRoutes);
 app.use("/api/v1/transacao", authMiddleware, TransacaoRoutes);
 app.use("/api/v1/pagamento", authMiddleware, PagamentoRoutes);
+app.use("/api/v1/emprestimo", EmprestimoRoutes);
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor rodando na porta 3000");
