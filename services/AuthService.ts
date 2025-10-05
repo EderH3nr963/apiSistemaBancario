@@ -134,7 +134,7 @@ class AuthService {
           id_usuario: usuarioRetornar.id_usuario,
           id_conta_bancaria: usuarioRetornar.conta_bancaria?.id_conta
         },
-        "MorangoOuBanana", {
+        process.env.JWT_SECRET || "chave_super_secreta", {
         expiresIn: "24h"
       })
 

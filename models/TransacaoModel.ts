@@ -14,8 +14,8 @@ class TransacaoModel extends Model<
   InferCreationAttributes<TransacaoModel>
 > {
   declare id_transacao: CreationOptional<number>;
-  declare id_conta_origem: ForeignKey<number>;
-  declare id_conta_destino: ForeignKey<number>;
+  declare id_conta_origem: ForeignKey<number | null>;
+  declare id_conta_destino: ForeignKey<number | null>;
   declare tipo: string;
   declare valor: number;
   declare descricao: string;
@@ -36,7 +36,6 @@ TransacaoModel.init(
     },
     id_conta_origem: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: "conta",
         key: "id_conta",
@@ -46,7 +45,6 @@ TransacaoModel.init(
     },
     id_conta_destino: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: "conta",
         key: "id_conta",

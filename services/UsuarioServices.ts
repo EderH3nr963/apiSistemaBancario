@@ -80,7 +80,7 @@ class UsuarioService {
         status: "success",
         statusCode: 200,
         msg: "Usuário encontrado.",
-        conta: conta,
+        conta: conta?.get({ plain: true }),
       };
     } catch (e) {
       // Mensagem genérica para erros no servidor
@@ -98,7 +98,7 @@ class UsuarioService {
       const conta = await ContaModel.findOne({
         where: { "$usuario.cpf$": cpf },
         attributes: {
-          exclude: ["password", "saldo", "chave_transferencia", "status_conta"],
+          exclude: ["password", "saldo", "status_conta"],
         },
         include: {
           model: UsuarioModel,
@@ -119,7 +119,7 @@ class UsuarioService {
         status: "success",
         statusCode: 200,
         msg: "Usuário encontrado.",
-        conta: conta,
+        conta: conta?.get({ plain: true }),
       };
     } catch (e) {
       // Mensagem genérica para erros no servidor
@@ -158,7 +158,7 @@ class UsuarioService {
         status: "success",
         statusCode: 200,
         msg: "Usuário encontrado.",
-        conta: conta,
+        conta: conta?.get({ plain: true }),
       };
     } catch (e) {
       // Mensagem genérica para erros no servidor

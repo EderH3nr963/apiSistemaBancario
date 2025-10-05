@@ -1,4 +1,4 @@
-import { ContaModel, EmprestimoModel, TransacaoModel } from "../models";
+import { ContaModel, EmprestimoModel, TransacaoModel, UsuarioModel } from "../models";
 import sequelize from "../config/database";
 import { sendEmail } from "../utils/sendEmail";
 
@@ -8,6 +8,12 @@ class EmprestimoService {
     try {
       const conta = await ContaModel.findOne({
         where: { id_conta },
+        include: [
+          {
+            model: UsuarioModel,
+            as: "usuario", // tem que ser o mesmo alias da associação
+          },
+        ],
         transaction,
       });
       if (!conta) {
@@ -68,7 +74,12 @@ class EmprestimoService {
       await transaction.commit();
 
       // Enviar email de confirmação
-      const usuario = await conta.getUsuario();
+      const usuario = await conta.usuario;
+
+      if (!usuario) {
+        throw new Error()
+      }
+
       await sendEmail(
         usuario.email,
         "Empréstimo Solicitado",
@@ -123,6 +134,12 @@ class EmprestimoService {
     try {
       const conta = await ContaModel.findOne({
         where: { id_conta },
+        include: [
+          {
+            model: UsuarioModel,
+            as: "usuario", // tem que ser o mesmo alias da associação
+          },
+        ],
         transaction,
       });
       if (!conta) {
@@ -204,7 +221,12 @@ class EmprestimoService {
       await transaction.commit();
 
       // Enviar email de confirmação
-      const usuario = await conta.getUsuario();
+      const usuario = await conta.usuario;
+
+      if (!usuario) {
+        throw new Error()
+      }
+
       await sendEmail(
         usuario.email,
         "Pagamento de Empréstimo",
