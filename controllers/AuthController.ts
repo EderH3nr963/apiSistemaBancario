@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import AuthService from "../services/AuthService";
+import "../types/expressSessionType";
 
 class AuthController {
   static async register(req: Request, res: Response) {

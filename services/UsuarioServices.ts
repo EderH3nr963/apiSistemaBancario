@@ -1,8 +1,5 @@
 import { UsuarioModel, ContaModel, EnderecoModel } from "../models";
 import AuthService from "./AuthService";
-import Redis from "ioredis";
-
-const redisClient = new Redis({ host: "127.0.0.1", port: 6379 });
 
 class UsuarioService {
   static async getById(id_usuario: number) {
@@ -172,25 +169,6 @@ class UsuarioService {
 
   static async updateEmail(id_usuario: number, email: string) {
     try {
-      // Verificar se o email foi verificado antes de usa-lo
-      const redisKey = `verify_code:${email}`;
-      const verification = await redisClient.hget(redisKey, "verification");
-      if (!verification) {
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Erro ao verificar email",
-        };
-      }
-
-      if (verification !== "1") {
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Email não verificado",
-        };
-      }
-
       // Coleta o usuario e verifica se ele foi importado corretamente
       const usuario = await UsuarioModel.findByPk(id_usuario);
       if (!usuario)

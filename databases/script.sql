@@ -1,77 +1,64 @@
-drop database banco_financeiro
-
-Create database banco_financeiro;
-
-use banco_financeiro;
+-- SQLite database setup
 
 CREATE TABLE usuario (
-    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
-    full_name VARCHAR(100) NOT NULL,
-    password VARCHAR(100) NOT NULL, -- Removi o UNIQUE (senhas podem coincidir, especialmente se forem hashes)
-    cpf CHAR(11) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    telefone VARCHAR(14) NOT NULL UNIQUE,
-    is_inactive BOOLEAN DEFAULT FALSE,
-    is_admin BOOLEAN DEFAULT FALSE,
+    id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name TEXT NOT NULL,
+    password TEXT NOT NULL,
+    cpf TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    telefone TEXT NOT NULL UNIQUE,
+    is_inactive INTEGER DEFAULT 0,
+    is_admin INTEGER DEFAULT 0,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE endereco (
-    id_endereco INT PRIMARY KEY AUTO_INCREMENT,
-    rua VARCHAR(120),
-    numero INT,
-    cidade VARCHAR(50),
-    uf CHAR(2),
-    id_usuario INT NOT NULL,
+    id_endereco INTEGER PRIMARY KEY AUTOINCREMENT,
+    rua TEXT,
+    numero INTEGER,
+    cidade TEXT,
+    uf TEXT,
+    id_usuario INTEGER NOT NULL,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
 );
 
 CREATE TABLE conta_bancaria (
-    id_conta INT PRIMARY KEY AUTO_INCREMENT,
-    id_usuario INT NOT NULL,
-    password CHAR(6) NOT NULL,
-    tipo_conta ENUM('corrente', 'poupanca') NOT NULL,
-    saldo DECIMAL(13, 2) DEFAULT 0.0,
-    chave_transferencia VARCHAR(100) UNIQUE, -- você pode gerar isso no app e usar cpf/email etc
-    status_conta ENUM(
-        'bloqueada',
-        'fechada',
-        'ativa'
-    ) DEFAULT 'ativa',
+    id_conta INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL,
+    password TEXT NOT NULL,
+    tipo_conta TEXT NOT NULL CHECK (tipo_conta IN ('corrente', 'poupanca')),
+    saldo REAL DEFAULT 0.0,
+    chave_transferencia TEXT UNIQUE,
+    status_conta TEXT DEFAULT 'ativa' CHECK (status_conta IN ('bloqueada', 'fechada', 'ativa')),
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
 );
 
 CREATE TABLE pagamento (
-    id_pagamento INT PRIMARY KEY AUTO_INCREMENT,
-    id_conta_destino INT NOT NULL,
-    valor DECIMAL(10, 2) NOT NULL,
-    status_pagamento ENUM(
-        'pendente',
-        'rejeitada',
-        'aceita',
-        'cancelada'
-    ), -- troquei " por '
+    id_pagamento INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_conta_destino INTEGER NOT NULL,
+    valor REAL NOT NULL,
+    status_pagamento TEXT CHECK (status_pagamento IN ('pendente', 'rejeitada', 'aceita', 'cancelada')),
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    chave_pagamento VARCHAR(150) NOT NULL,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    chave_pagamento TEXT NOT NULL,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_conta_destino) REFERENCES conta_bancaria (id_conta)
 );
 
 CREATE TABLE transacao (
-    id_transacao INT PRIMARY KEY AUTO_INCREMENT,
-    id_conta_origem INT NOT NULL,
-    id_conta_destino INT NOT NULL,
-    tipo VARCHAR(50) NOT NULL,
-    valor DECIMAL(10, 2) NOT NULL,
+    id_transacao INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_conta_origem INTEGER NOT NULL,
+    id_conta_destino INTEGER NOT NULL,
+    tipo TEXT NOT NULL,
+    valor REAL NOT NULL,
     descricao TEXT,
-    status ENUM('cancelada', 'aprovada') DEFAULT 'aprovada',
+    status TEXT DEFAULT 'aprovada' CHECK (status IN ('cancelada', 'aprovada')),
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_conta_origem) REFERENCES conta_bancaria (id_conta),
     FOREIGN KEY (id_conta_destino) REFERENCES conta_bancaria (id_conta)
 );
@@ -137,21 +124,18 @@ Create Table cofrinho (
     dinheiro_econ double not null
 );
 
-select * from usuario, endereco;
+-- Insert test data
+INSERT INTO usuario (full_name, password, cpf, email, telefone) VALUES
+('João Silva', '$2b$10$examplehash1', '12345678901', 'joao@email.com', '11987654321'),
+('Maria Oliveira', '$2b$10$examplehash2', '98765432109', 'maria@email.com', '11987654322');
 
-update usuario
-set
-    email = "ederhenriquevicentejust963@gmail.com"
-where
-    id_usuario = 1;
+INSERT INTO endereco (rua, numero, cidade, uf, id_usuario) VALUES
+('Rua A', 123, 'São Paulo', 'SP', 1),
+('Rua B', 456, 'Rio de Janeiro', 'RJ', 2);
 
-SELECT
-    id_usuario,
-    cpf,
-    nome,
-    email,
-    telefone,
-    hash_password_login
-FROM usuario
-WHERE
-    email = "ederh@gmail.com"
+INSERT INTO conta_bancaria (id_usuario, password, tipo_conta, saldo) VALUES
+(1, '123456', 'corrente', 1000.00),
+(2, '654321', 'corrente', 500.00);
+
+INSERT INTO transacao (id_conta_origem, id_conta_destino, tipo, valor, descricao) VALUES
+(1, 2, 'transferência', 100.00, 'Teste transferência');

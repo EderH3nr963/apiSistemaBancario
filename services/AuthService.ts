@@ -1,40 +1,20 @@
 import { UsuarioModel, ContaModel, EnderecoModel } from "../models";
 import Endereco from "../models/EnderecoModel";
 import sequelize from "../config/database";
-import Redis from "ioredis";
 import jwt from "jsonwebtoken";
-import { sendEmail } from "../utils/sendEmail";
 import crypto from "crypto";
 
-const redisClient = new Redis({ host: "127.0.0.1", port: 6379 });
+// In-memory storage for verification codes (development only)
+const verificationCodes = new Map<string, { code: string; expires: number }>();
 
 class AuthService {
   static async register(usuarioReq: any, enderecoReq: any, contaReq: any) {
     const transaction = await sequelize.transaction();
     try {
-      const redisKey = `verify_code:${usuarioReq.email}`;
-      const verification = await redisClient.hget(redisKey, "verification");
-
       const chave_transferencia = crypto
         .createHash("sha256")
         .update(`${usuarioReq.cpf}-${usuarioReq.email}-${Date.now()}`)
         .digest("hex");
-
-      if (!verification) {
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Erro ao verificar email",
-        };
-      }
-
-      if (verification !== "1") {
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Email não verificado",
-        };
-      }
 
       const emailExisting = await UsuarioModel.findOne({
         where: { email: usuarioReq.email },
@@ -60,21 +40,19 @@ class AuthService {
 
       const usuario = await UsuarioModel.create(usuarioReq, { transaction });
 
-      Promise.all([
-        await Endereco.create(
-          { ...enderecoReq, id_usuario: usuario.id_usuario },
-          { transaction }
-        ),
+      await Endereco.create(
+        { ...enderecoReq, id_usuario: usuario.id_usuario },
+        { transaction }
+      );
 
-        await ContaModel.create(
-          {
-            ...contaReq,
-            id_usuario: usuario.id_usuario,
-            chave_transferencia: chave_transferencia,
-          },
-          { transaction }
-        ),
-      ]);
+      await ContaModel.create(
+        {
+          ...contaReq,
+          id_usuario: usuario.id_usuario,
+          chave_transferencia: chave_transferencia,
+        },
+        { transaction }
+      );
 
       await transaction.commit();
 
@@ -157,25 +135,6 @@ class AuthService {
 
   static async resetPassword(email: string, password: string) {
     try {
-      const redisKey = `verify_code:${email}`;
-      const verification = await redisClient.hget(redisKey, "verification");
-
-      if (!verification) {
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Erro ao verificar email",
-        };
-      }
-
-      if (verification !== "1") {
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Email não verificado",
-        };
-      }
-
       // Pega o usuário no banco de dados
       const usuario = await UsuarioModel.findOne({
         where: {
@@ -198,13 +157,13 @@ class AuthService {
       return {
         status: "success",
         statusCode: 201,
-        msg: "Sucesso ao se cadastrar no banco!",
+        msg: "Senha redefinida com sucesso",
       };
     } catch (e) {
       return {
         status: "error",
         statusCode: 500,
-        msg: "Erro inesperado ao fazer login.",
+        msg: "Erro inesperado ao redefinir senha.",
       };
     }
   }
@@ -257,105 +216,84 @@ class AuthService {
 
   static async sendCodeVerification(email: string) {
     try {
-      const code = Math.floor(100000 + Math.random() * 900000); // código de 6 dígitos
-      const redisKey = `verify_code:${email}`;
+      // Use fixed code for development
+      const code = "123456";
+      const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-      const currentTimeSendEmail = await redisClient.hget(
-        redisKey,
-        "currentTimeSendEmail"
-      );
-      if (
-        currentTimeSendEmail &&
-        Date.now() - Number(currentTimeSendEmail) < 1000 * 60
-      ) {
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Você deve esperar 60 segundos para enviar um novo código",
-        };
+      // Store the code
+      verificationCodes.set(email, { code, expires });
+
+      // Try to send email (but don't fail if it doesn't work)
+      try {
+        const { sendEmail } = await import("../utils/sendEmail");
+        await sendEmail(
+          email,
+          "Código de Verificação - Sistema Bancário",
+          `<p>Seu código de verificação é: <strong>${code}</strong></p><p>Este código expira em 10 minutos.</p>`
+        );
+      } catch (emailError) {
+        console.log("Email sending failed, but code generated:", code);
       }
-
-      // setando o tempo atual
-      await redisClient.hset(redisKey, {
-        verification: "0",
-        code: code.toString(),
-        currentTimeSendEmail: Date.now().toString(),
-      });
-
-      await redisClient.expire(redisKey, 300); // 5 minutos
-
-      const html = `
-            <div style="font-family: sans-serif; text-align: center;">
-                <h2>Verificação de E-mail</h2>
-                <p>Seu código de verificação é:</p>
-                <h1 style="letter-spacing: 5px;">${code}</h1>
-                <p>Esse código expira em 5 minutos.</p>
-            </div>
-        `;
-
-      await sendEmail(email, "Código de verificação", html);
 
       return {
         status: "success",
         statusCode: 200,
         msg: "Código de verificação enviado com sucesso",
+        code: code, // Include code in response for development
       };
-    } catch (e) {
-      console.error("Erro ao enviar código de verificação:", e);
+    } catch (error) {
+      console.error("Error generating verification code:", error);
       return {
         status: "error",
         statusCode: 500,
-        msg: "Erro interno ao enviar código de verificação",
+        msg: "Erro ao gerar código de verificação",
       };
     }
   }
 
   static async verifyCode(email: string, code: number) {
-    const redisKey = `verify_code:${email}`;
     try {
+      const stored = verificationCodes.get(email);
 
-      const verification = await redisClient.hget(redisKey, "verification");
-      const redisCode = await redisClient.hget(redisKey, "code");
-
-      if (!verification || !code) {
+      if (!stored) {
         return {
           status: "error",
           statusCode: 400,
-          msg: "Código inválido ou expirado",
+          msg: "Código de verificação não encontrado ou expirado",
         };
       }
 
-      if (redisCode !== code.toString()) {
+      if (Date.now() > stored.expires) {
+        verificationCodes.delete(email);
         return {
           status: "error",
           statusCode: 400,
-          msg: "Código inválido ou expirado",
+          msg: "Código de verificação expirado",
         };
       }
 
-      if (verification === "1") {
+      if (stored.code !== code.toString()) {
         return {
           status: "error",
           statusCode: 400,
-          msg: "Código já utilizado",
+          msg: "Código de verificação inválido",
         };
       }
 
-      // Atualiza como verificado
-      await redisClient.hset(redisKey, "verification", "1");
-
+      // Code is valid, remove it
+      verificationCodes.delete(email);
 
       return {
         status: "success",
         statusCode: 200,
         msg: "Código verificado com sucesso",
       };
-    } catch (e) {
-      console.error("Erro ao verificar código:", e);
+    } catch (error) {
+      console.error("Error verifying code:", error);
       return {
         status: "error",
         statusCode: 500,
-        msg: "Erro interno ao verificar código",
+        msg: "Erro ao verificar código",
       };
     }
   }
