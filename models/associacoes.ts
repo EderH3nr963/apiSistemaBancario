@@ -3,6 +3,7 @@ import TransacaoModel from "./TransacaoModel";
 import UsuarioModel from "./UsuarioModel";
 import EnderecoModel from "./EnderecoModel";
 import PagamentoModel from "./PagamentoModel";
+import EmprestimoModel from "./EmprestimoModel";
 
 // Usuário tem uma conta
 UsuarioModel.hasOne(ContaModel, {
@@ -58,4 +59,14 @@ TransacaoModel.belongsTo(ContaModel, {
 TransacaoModel.belongsTo(ContaModel, {
   as: "conta_destino",
   foreignKey: "id_conta_destino",
+});
+
+// Adição Empréstimo
+ContaModel.hasMany(EmprestimoModel, {
+  as: "emprestimos",
+  foreignKey: "id_conta",
+});
+EmprestimoModel.belongsTo(ContaModel, {
+  as: "conta",
+  foreignKey: "id_conta",
 });

@@ -6,6 +6,7 @@ import AuthRoutes from "./routes/AuthRoutes";
 import UsuarioRoutes from "./routes/UsuarioRoutes";
 import TransacaoRoutes from "./routes/TransacaoRoutes";
 import PagamentoRoutes from "./routes/PagamentoRoutes";
+import EmprestimoRoutes from "./routes/EmprestimoRoutes";
 
 import { authMiddleware } from "./middlewares/AuthMiddleware";
 import sequelize from "./config/database";
@@ -27,6 +28,7 @@ app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/usuario", authMiddleware, UsuarioRoutes);
 app.use("/api/v1/transacao", authMiddleware, TransacaoRoutes);
 app.use("/api/v1/pagamento", authMiddleware, PagamentoRoutes);
+app.use("/api/v1/emprestimo", EmprestimoRoutes);
 
 sequelize.sync({ force: false }).then(() => {
   console.log("Database synced");

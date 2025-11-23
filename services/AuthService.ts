@@ -112,7 +112,7 @@ class AuthService {
           id_usuario: usuarioRetornar.id_usuario,
           id_conta_bancaria: usuarioRetornar.conta_bancaria?.id_conta
         },
-        "MorangoOuBanana", {
+        process.env.JWT_SECRET || "chave_super_secreta", {
         expiresIn: "24h"
       })
 
@@ -218,12 +218,10 @@ class AuthService {
     try {
       // Use fixed code for development
       const code = "123456";
-      const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+      const expires = Date.now() + 10 * 60 * 1000; // 10 minutos
 
-      // Store the code
       verificationCodes.set(email, { code, expires });
 
-      // Try to send email (but don't fail if it doesn't work)
       try {
         const { sendEmail } = await import("../utils/sendEmail");
         await sendEmail(
@@ -239,7 +237,7 @@ class AuthService {
         status: "success",
         statusCode: 200,
         msg: "Código de verificação enviado com sucesso",
-        code: code, // Include code in response for development
+        code: code,
       };
     } catch (error) {
       console.error("Error generating verification code:", error);
@@ -280,7 +278,6 @@ class AuthService {
         };
       }
 
-      // Code is valid, remove it
       verificationCodes.delete(email);
 
       return {
