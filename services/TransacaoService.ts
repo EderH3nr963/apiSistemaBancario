@@ -64,16 +64,16 @@ class TransacaoService {
         };
       }
 
-      Promise.all([
-        await contaRemetente.update(
+      await Promise.all([
+        contaRemetente.update(
           { saldo: Number(contaRemetente.saldo) - value },
           { transaction }
         ),
-        await contaDestinario.update(
+        contaDestinario.update(
           { saldo: Number(contaDestinario.saldo) + value },
           { transaction }
         ),
-        await TransacaoModel.create(
+        TransacaoModel.create(
           {
             id_conta_destino: contaDestinario.id_conta,
             id_conta_origem: contaRemetente.id_conta,

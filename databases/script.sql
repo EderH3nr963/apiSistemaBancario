@@ -54,6 +54,8 @@ CREATE TABLE transacao (
     id_conta_origem INTEGER NOT NULL,
     id_conta_destino INTEGER NOT NULL,
     tipo TEXT NOT NULL,
+    date DATE NOT NULL,
+    hora TIME NOT NULL,
     valor REAL NOT NULL,
     descricao TEXT,
     status TEXT DEFAULT 'aprovada' CHECK (status IN ('cancelada', 'aprovada')),

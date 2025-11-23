@@ -100,7 +100,7 @@ class UsuarioService {
         include: {
           model: UsuarioModel,
           as: "usuario",
-          attributes: ["full_name"],
+          attributes: ["full_name", "cpf"],
         },
       });
 
