@@ -56,7 +56,7 @@ class UsuarioService {
       const conta = await ContaModel.findOne({
         where: { chave_transferencia: chave_transferencia },
         attributes: {
-          exclude: ["password", "saldo", "chave_transferencia", "status_conta"],
+          exclude: ["password", "saldo", "status_conta"],
         },
         include: {
           model: UsuarioModel,
@@ -134,7 +134,7 @@ class UsuarioService {
       const conta = await ContaModel.findOne({
         where: { "$usuario.telefone$": cpf },
         attributes: {
-          exclude: ["password", "saldo", "chave_transferencia", "status_conta"],
+          exclude: ["password", "saldo", "status_conta"],
         },
         include: {
           model: UsuarioModel,

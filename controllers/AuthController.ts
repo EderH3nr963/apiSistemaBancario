@@ -80,6 +80,14 @@ class AuthController {
     res.status(response.statusCode).json(response);
   }
 
+  static async telefoneInUse(req: Request, res: Response) {
+    const { telefone } = req.params;
+
+    const response = await AuthService.telefoneInUse(telefone);
+
+    res.status(response.statusCode).json(response);
+  }
+
   static async resetPassword(req: Request, res: Response) {
     const { email, password } = req.body;
 

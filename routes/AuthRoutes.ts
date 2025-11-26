@@ -32,6 +32,14 @@ router.get(
   MyValidatorResult,
   AuthController.cpfInUse
 );
+router.get(
+  "/telefone-in-use/:telefone",
+  param("telefone")
+    .matches(/^\d{11}$/)
+    .withMessage("Telefone inválido"),
+  MyValidatorResult,
+  AuthController.telefoneInUse
+);
 
 router.get(
   "/send-code-verification/:email",

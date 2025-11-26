@@ -38,6 +38,17 @@ class AuthService {
         };
       }
 
+      const telefoneExisting = await UsuarioModel.findOne({
+        where: { telefone: usuarioReq.telefone },
+      });
+      if (telefoneExisting) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Telefone já está em uso",
+        };
+      }
+
       const usuario = await UsuarioModel.create(usuarioReq, { transaction });
 
       await Endereco.create(
@@ -211,6 +222,27 @@ class AuthService {
       };
     } catch (e) {
       return { status: "error", statusCode: 400, msg: "CPF já esta em uso." };
+    }
+  }
+
+  static async telefoneInUse(telefone: string) {
+    try {
+      const usuario = await UsuarioModel.findOne({
+        where: {
+          telefone: telefone,
+        },
+      });
+
+      if (usuario)
+        return { status: "error", statusCode: 400, msg: "Telefone já está em uso." };
+
+      return {
+        status: "success",
+        statusCode: 200,
+        msg: "Telefone não está em uso.",
+      };
+    } catch (e) {
+      return { status: "error", statusCode: 400, msg: "Telefone já está em uso." };
     }
   }
 

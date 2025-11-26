@@ -56,6 +56,14 @@ class TransacaoService {
         };
       }
 
+      if (value <= 0) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Valor deve ser maior que zero",
+        };
+      }
+  
       if (contaRemetente.saldo < value) {
         return {
           status: "error",
@@ -63,6 +71,19 @@ class TransacaoService {
           msg: "Saldo insuficiente",
         };
       }
+
+      const transacao = await TransacaoModel.create(
+        {
+          id_conta_destino: contaDestinario.id_conta,
+          id_conta_origem: contaRemetente.id_conta,
+          valor: value,
+          date: new Date().toISOString().split('T')[0],
+          hora: new Date().toTimeString().split(' ')[0],
+          descricao: descricao || "",
+          tipo: "transferência",
+        },
+        { transaction }
+      );
 
       await Promise.all([
         contaRemetente.update(
@@ -73,18 +94,6 @@ class TransacaoService {
           { saldo: Number(contaDestinario.saldo) + value },
           { transaction }
         ),
-        TransacaoModel.create(
-          {
-            id_conta_destino: contaDestinario.id_conta,
-            id_conta_origem: contaRemetente.id_conta,
-            valor: value,
-            date: new Date().toISOString().split('T')[0],
-            hora: new Date().toTimeString().split(' ')[0],
-            descricao: descricao || "",
-            tipo: "transferência",
-          },
-          { transaction }
-        ),
       ]);
 
       await transaction.commit();
@@ -93,8 +102,11 @@ class TransacaoService {
         status: "success",
         statusCode: 200,
         msg: "Saldo enviado com sucesso",
+        transactionId: transacao.id_transacao,
       };
     } catch (e) {
+      console.log("Erro detalhado na transferência:", e);
+      await transaction.rollback();
       return {
         status: "error",
         statusCode: 500,

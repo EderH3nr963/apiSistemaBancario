@@ -69,7 +69,7 @@ ContaModel.init(
     },
   },
   {
-    tableName: "conta_bancaria",
+    tableName: "conta",
     sequelize,
   }
 );
@@ -85,11 +85,6 @@ ContaModel.addHook("beforeUpdate", async (conta: any) => {
     conta.password = await bcrypt.hash(conta.password, salt);
   }
 });
-
-ContaModel.prototype.validPassword = async function (password: string) {
-  return await bcrypt.compare(password, this.password);
-};
-
 
 ContaModel.prototype.validPassword = async function (password: string) {
   return await bcrypt.compare(password, this.password);
