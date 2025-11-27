@@ -90,25 +90,28 @@ class EmprestimoService {
 
       await transaction.commit();
 
-      // Enviar email de confirmação
-      const usuario = await conta.usuario;
+      // Enviar email de confirmação (opcional)
+      try {
+        const usuario = await conta.usuario;
 
-      if (!usuario) {
-        throw new Error()
+        if (usuario) {
+          await sendEmail(
+            usuario.email,
+            "Empréstimo Solicitado",
+            `
+              <div style="font-family: sans-serif; text-align: center;">
+                <h2>Empréstimo Solicitado</h2>
+                <p>Seu empréstimo de R$${valor.toFixed(2)} foi aprovado!</p>
+                <p>Prazo: ${prazo_meses} meses</p>
+                <p>Saldo devedor inicial: R$${saldo_devedor.toFixed(2)}</p>
+              </div>
+            `
+          );
+        }
+      } catch (emailError) {
+        console.warn("Falha ao enviar email de confirmação:", emailError);
+        // Não falha a operação por causa do email
       }
-
-      await sendEmail(
-        usuario.email,
-        "Empréstimo Solicitado",
-        `
-          <div style="font-family: sans-serif; text-align: center;">
-            <h2>Empréstimo Solicitado</h2>
-            <p>Seu empréstimo de R$${valor.toFixed(2)} foi aprovado!</p>
-            <p>Prazo: ${prazo_meses} meses</p>
-            <p>Saldo devedor inicial: R$${saldo_devedor.toFixed(2)}</p>
-          </div>
-        `
-      );
 
       return {
         status: "success",
@@ -272,24 +275,27 @@ class EmprestimoService {
 
       await transaction.commit();
 
-      // Enviar email de confirmação
-      const usuario = await conta.usuario;
-      if (!usuario) {
-        throw new Error();
+      // Enviar email de confirmação (opcional)
+      try {
+        const usuario = await conta.usuario;
+        if (usuario) {
+          await sendEmail(
+            usuario.email,
+            "Pagamento de Parcela",
+            `
+              <div style="font-family: sans-serif; text-align: center;">
+                <h2>Pagamento de Parcela</h2>
+                <p>Você pagou a parcela ${parcela.numero_parcela} do seu empréstimo.</p>
+                <p>Valor pago: R$${valor.toFixed(2)}</p>
+                <p>Data de pagamento: ${new Date().toLocaleDateString("pt-BR")}</p>
+              </div>
+            `
+          );
+        }
+      } catch (emailError) {
+        console.warn("Falha ao enviar email de confirmação:", emailError);
+        // Não falha a operação por causa do email
       }
-
-      await sendEmail(
-        usuario.email,
-        "Pagamento de Parcela",
-        `
-          <div style="font-family: sans-serif; text-align: center;">
-            <h2>Pagamento de Parcela</h2>
-            <p>Você pagou a parcela ${parcela.numero_parcela} do seu empréstimo.</p>
-            <p>Valor pago: R$${valor.toFixed(2)}</p>
-            <p>Data de pagamento: ${new Date().toLocaleDateString("pt-BR")}</p>
-          </div>
-        `
-      );
 
       return {
         status: "success",
