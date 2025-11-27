@@ -358,6 +358,119 @@ class UsuarioService {
       };
     }
   }
+
+  static async updateChaveTransferencia(id_usuario: number, chave_transferencia: string) {
+    try {
+      const conta = await ContaModel.findOne({ where: { id_usuario } });
+      if (!conta) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Usuário não encontrado",
+        };
+      }
+
+      // Check if chave_transferencia is already in use
+      const existingConta = await ContaModel.findOne({ where: { chave_transferencia } });
+      if (existingConta && existingConta.id_conta !== conta.id_conta) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Chave Pix já está em uso",
+        };
+      }
+
+      await conta.update({ chave_transferencia });
+
+      return {
+        status: "success",
+        statusCode: 200,
+        msg: "Chave Pix atualizada com sucesso",
+      };
+    } catch (e) {
+      return {
+        status: "error",
+        statusCode: 500,
+        msg: "Erro interno no sistema. Por favor tente novamente mais tarde",
+      };
+    }
+  }
+
+  static async addToCofrinho(id_usuario: number, valor: number) {
+    try {
+      const conta = await ContaModel.findOne({ where: { id_usuario } });
+      if (!conta) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Usuário não encontrado",
+        };
+      }
+
+      if (conta.saldo < valor) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Saldo insuficiente",
+        };
+      }
+
+      await conta.update({
+        saldo: conta.saldo - valor,
+        cofrinho: (conta.cofrinho || 0) + valor
+      });
+
+      return {
+        status: "success",
+        statusCode: 200,
+        msg: "Valor adicionado ao cofrinho com sucesso",
+      };
+    } catch (e) {
+      return {
+        status: "error",
+        statusCode: 500,
+        msg: "Erro interno no sistema. Por favor tente novamente mais tarde",
+      };
+    }
+  }
+
+  static async withdrawFromCofrinho(id_usuario: number, valor: number) {
+    try {
+      const conta = await ContaModel.findOne({ where: { id_usuario } });
+      if (!conta) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Usuário não encontrado",
+        };
+      }
+
+      if ((conta.cofrinho || 0) < valor) {
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Valor insuficiente no cofrinho",
+        };
+      }
+
+      await conta.update({
+        saldo: conta.saldo + valor,
+        cofrinho: (conta.cofrinho || 0) - valor
+      });
+
+      return {
+        status: "success",
+        statusCode: 200,
+        msg: "Valor retirado do cofrinho com sucesso",
+      };
+    } catch (e) {
+      return {
+        status: "error",
+        statusCode: 500,
+        msg: "Erro interno no sistema. Por favor tente novamente mais tarde",
+      };
+    }
+  }
 }
 
 export default UsuarioService;

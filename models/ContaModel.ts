@@ -18,6 +18,7 @@ class ContaModel extends Model<
   public id_conta!: CreationOptional<number>;
   public tipo_conta!: string;
   public saldo!: CreationOptional<number>;
+  public cofrinho!: CreationOptional<number>;
   public status_conta!: CreationOptional<string>;
   public chave_transferencia!: string;
   public password!: string;
@@ -40,6 +41,11 @@ ContaModel.init(
       defaultValue: "corrente",
     },
     saldo: {
+      type: DataTypes.DECIMAL(13, 2),
+      allowNull: false,
+      defaultValue: 0.0,
+    },
+    cofrinho: {
       type: DataTypes.DECIMAL(13, 2),
       allowNull: false,
       defaultValue: 0.0,

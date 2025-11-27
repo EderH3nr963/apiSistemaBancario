@@ -41,6 +41,24 @@ router.patch(
   MyValidatorResult,
   UsuarioController.updateEndereco
 );
+router.patch(
+  "/chave-pix",
+  [body("chave_transferencia").isLength({ min: 1 }).withMessage("Chave Pix é obrigatória")],
+  MyValidatorResult,
+  UsuarioController.updateChaveTransferencia
+);
+router.post(
+  "/cofrinho/add",
+  [body("valor").isFloat({ min: 0.01 }).withMessage("Valor deve ser maior que 0")],
+  MyValidatorResult,
+  UsuarioController.addToCofrinho
+);
+router.post(
+  "/cofrinho/withdraw",
+  [body("valor").isFloat({ min: 0.01 }).withMessage("Valor deve ser maior que 0")],
+  MyValidatorResult,
+  UsuarioController.withdrawFromCofrinho
+);
 
 // Rotas dinâmicas por último
 router.get("/chave-pix/:chave_transferencia", UsuarioController.getByChaveTransferencia);
