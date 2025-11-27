@@ -15,11 +15,6 @@ const EmprestimoValidatorData = {
       .withMessage("A senha deve conter 6 dígitos numéricos"),
   ],
   pagar: [
-    body("valor")
-      .isNumeric()
-      .withMessage("O valor deve ser numérico")
-      .custom((value) => value > 0)
-      .withMessage("O valor deve ser maior que 0"),
     body("password")
       .matches(/^\d{6}$/)
       .withMessage("A senha deve conter 6 dígitos numéricos"),

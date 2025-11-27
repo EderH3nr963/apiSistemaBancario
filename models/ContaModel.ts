@@ -69,7 +69,7 @@ ContaModel.init(
     },
   },
   {
-    tableName: "conta",
+    tableName: "conta_bancaria",
     sequelize,
   }
 );

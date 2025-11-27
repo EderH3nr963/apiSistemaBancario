@@ -22,11 +22,11 @@ router.get(
 );
 
 router.post(
-  "/pay/:id_emprestimo",
+  "/pay/:id_parcela",
   [
-    param("id_emprestimo")
+    param("id_parcela")
       .isInt()
-      .withMessage("ID do empréstimo inválido"),
+      .withMessage("ID da parcela inválido"),
     ...EmprestimoValidatorData.pagar,
   ],
   MyValidatorResult,

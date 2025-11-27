@@ -1,4 +1,4 @@
-import { ContaModel, EmprestimoModel, TransacaoModel, UsuarioModel } from "../models";
+import { ContaModel, EmprestimoModel, TransacaoModel, UsuarioModel, ParcelaModel } from "../models";
 import sequelize from "../config/database";
 import { sendEmail } from "../utils/sendEmail";
 
@@ -71,6 +71,23 @@ class EmprestimoService {
         { transaction }
       );
 
+      // Criar parcelas mensais
+      const valorParcela = Number((saldo_devedor / prazo_meses).toFixed(2));
+      const parcelas = [];
+      for (let i = 1; i <= prazo_meses; i++) {
+        const dataVencimento = new Date();
+        dataVencimento.setMonth(dataVencimento.getMonth() + i);
+
+        parcelas.push({
+          id_emprestimo: emprestimo.id_emprestimo,
+          numero_parcela: i,
+          valor_parcela: valorParcela,
+          data_vencimento: dataVencimento,
+          status: "pendente",
+        });
+      }
+      await ParcelaModel.bulkCreate(parcelas, { transaction });
+
       await transaction.commit();
 
       // Enviar email de confirmação
@@ -100,6 +117,7 @@ class EmprestimoService {
         emprestimo,
       };
     } catch (e) {
+      console.error("Erro ao solicitar empréstimo:", e);
       await transaction.rollback();
       return {
         status: "error",
@@ -113,6 +131,13 @@ class EmprestimoService {
     try {
       const emprestimos = await EmprestimoModel.findAll({
         where: { id_conta },
+        include: [
+          {
+            model: ParcelaModel,
+            as: "parcelas",
+            order: [["numero_parcela", "ASC"]],
+          },
+        ],
       });
       return {
         status: "success",
@@ -129,7 +154,7 @@ class EmprestimoService {
     }
   }
 
-  static async pagar(id_conta: number, id_emprestimo: number, valor: number, password: string) {
+  static async pagar(id_conta: number, id_parcela: number, password: string) {
     const transaction = await sequelize.transaction();
     try {
       const conta = await ContaModel.findOne({
@@ -137,7 +162,7 @@ class EmprestimoService {
         include: [
           {
             model: UsuarioModel,
-            as: "usuario", // tem que ser o mesmo alias da associação
+            as: "usuario",
           },
         ],
         transaction,
@@ -158,6 +183,37 @@ class EmprestimoService {
           msg: "Senha inválida",
         };
       }
+
+      const parcela = await ParcelaModel.findOne({
+        where: { id_parcela },
+        include: [
+          {
+            model: EmprestimoModel,
+            as: "emprestimo",
+            where: { id_conta },
+            required: true,
+          },
+        ],
+        transaction,
+      });
+      if (!parcela) {
+        await transaction.rollback();
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Parcela não encontrada",
+        };
+      }
+      if (parcela.status === "pago") {
+        await transaction.rollback();
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Parcela já foi paga",
+        };
+      }
+
+      const valor = parcela.valor_parcela;
       if (Number(conta.saldo) < valor) {
         await transaction.rollback();
         return {
@@ -167,40 +223,22 @@ class EmprestimoService {
         };
       }
 
-      const emprestimo = await EmprestimoModel.findOne({
-        where: { id_emprestimo, id_conta },
-        transaction,
-      });
-      if (!emprestimo) {
-        await transaction.rollback();
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Empréstimo não encontrado",
-        };
-      }
-      if (emprestimo.status === "pago") {
-        await transaction.rollback();
-        return {
-          status: "error",
-          statusCode: 400,
-          msg: "Empréstimo já foi pago",
-        };
-      }
-
-      const novo_saldo_devedor = Number((emprestimo.saldo_devedor - valor).toFixed(2));
-      const novo_status = novo_saldo_devedor <= 0 ? "pago" : emprestimo.status;
-
-      await emprestimo.update(
-        { saldo_devedor: novo_saldo_devedor, status: novo_status },
+      // Pagar a parcela
+      await parcela.update(
+        {
+          status: "pago",
+          data_pagamento: new Date(),
+        },
         { transaction }
       );
 
+      // Debitar da conta
       await conta.update(
         { saldo: Number(conta.saldo) - Number(valor) },
         { transaction }
       );
 
+      // Criar transação
       await TransacaoModel.create(
         {
           id_conta_origem: id_conta,
@@ -212,30 +250,43 @@ class EmprestimoService {
             minute: "2-digit",
             hour12: false,
           }),
-          descricao: "Pagamento de parcela de empréstimo",
+          descricao: `Pagamento de parcela ${parcela.numero_parcela} do empréstimo`,
           tipo: "pagamento_emprestimo",
         },
         { transaction }
       );
 
+      // Verificar se todas as parcelas foram pagas
+      const emprestimo = parcela.get('emprestimo') as EmprestimoModel;
+      const parcelasPendentes = await ParcelaModel.count({
+        where: {
+          id_emprestimo: emprestimo.id_emprestimo,
+          status: "pendente",
+        },
+        transaction,
+      });
+
+      if (parcelasPendentes === 0) {
+        await emprestimo.update({ status: "pago" }, { transaction });
+      }
+
       await transaction.commit();
 
       // Enviar email de confirmação
       const usuario = await conta.usuario;
-
       if (!usuario) {
-        throw new Error()
+        throw new Error();
       }
 
       await sendEmail(
         usuario.email,
-        "Pagamento de Empréstimo",
+        "Pagamento de Parcela",
         `
           <div style="font-family: sans-serif; text-align: center;">
-            <h2>Pagamento de Empréstimo</h2>
-            <p>Você pagou R$${valor.toFixed(2)} da sua dívida.</p>
-            <p>Saldo devedor restante: R$${novo_saldo_devedor.toFixed(2)}</p>
-            <p>Status: ${novo_status}</p>
+            <h2>Pagamento de Parcela</h2>
+            <p>Você pagou a parcela ${parcela.numero_parcela} do seu empréstimo.</p>
+            <p>Valor pago: R$${valor.toFixed(2)}</p>
+            <p>Data de pagamento: ${new Date().toLocaleDateString("pt-BR")}</p>
           </div>
         `
       );
@@ -244,7 +295,7 @@ class EmprestimoService {
         status: "success",
         statusCode: 200,
         msg: "Parcela paga com sucesso",
-        emprestimo,
+        parcela,
       };
     } catch (e) {
       await transaction.rollback();

@@ -4,19 +4,28 @@ import { AuthRequest } from "../middlewares/AuthMiddleware";
 
 class EmprestimoController {
   static async solicitar(req: AuthRequest, res: Response) {
-    const id_conta = req.user?.id_conta_bancaria;
-    if (!id_conta || typeof id_conta !== "number") {
-      res.status(401).json({
-        status: "error",
-        statusCode: 401,
-        msg: "Usuário não autenticado",
-      });
-      return;
-    }
-    const { valor, prazo_meses, password } = req.body;
+    try {
+      const id_conta = req.user?.id_conta_bancaria;
+      if (!id_conta || typeof id_conta !== "number") {
+        res.status(401).json({
+          status: "error",
+          statusCode: 401,
+          msg: "Usuário não autenticado",
+        });
+        return;
+      }
+      const { valor, prazo_meses, password } = req.body;
 
-    const response = await EmprestimoService.solicitar(id_conta, valor, prazo_meses, password);
-    res.status(response.statusCode).json(response);
+      const response = await EmprestimoService.solicitar(id_conta, valor, prazo_meses, password);
+      res.status(response.statusCode).json(response);
+    } catch (e) {
+      console.error("Erro no controller de empréstimo:", e);
+      res.status(500).json({
+        status: "error",
+        statusCode: 500,
+        msg: "Erro interno do servidor",
+      });
+    }
   }
 
   static async listar(req: AuthRequest, res: Response) {
@@ -44,10 +53,10 @@ class EmprestimoController {
       });
       return;
     }
-    const { valor, password } = req.body;
-    const id_emprestimo = parseInt(req.params.id_emprestimo);
+    const { password } = req.body;
+    const id_parcela = parseInt(req.params.id_parcela);
 
-    const response = await EmprestimoService.pagar(id_conta, id_emprestimo, valor, password);
+    const response = await EmprestimoService.pagar(id_conta, id_parcela, password);
     res.status(response.statusCode).json(response);
   }
 }

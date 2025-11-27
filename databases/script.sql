@@ -1,4 +1,4 @@
--- SQLite database setup
+-- SQLite Banco de Dados
 
 CREATE TABLE usuario (
     id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,12 +74,32 @@ Create Table agencia (
     cnpj char(14) not null unique
 );
 
-Create Table emprestimo (
-    id_empréstimo int primary key auto_increment,
-    valor double(13, 2) not null,
-    juros double(6, 2),
-    qtde_parcela int,
-    data_emp date not null
+CREATE TABLE emprestimo (
+    id_emprestimo INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_conta INTEGER NOT NULL,
+    valor DECIMAL(10, 2) NOT NULL,
+    taxa_juros DECIMAL(5, 4) NOT NULL DEFAULT 0.01,
+    prazo_meses INTEGER NOT NULL,
+    saldo_devedor DECIMAL(10, 2) NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pendente', 'aprovado', 'pago', 'rejeitado')) DEFAULT 'pendente',
+    data_solicitacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    data_aprovacao DATETIME,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_conta) REFERENCES conta_bancaria (id_conta)
+);
+
+CREATE TABLE parcela (
+    id_parcela INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_emprestimo INTEGER NOT NULL,
+    numero_parcela INTEGER NOT NULL,
+    valor_parcela DECIMAL(10, 2) NOT NULL,
+    data_vencimento DATETIME NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pendente', 'pago', 'atrasado')) DEFAULT 'pendente',
+    data_pagamento DATETIME,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_emprestimo) REFERENCES emprestimo (id_emprestimo)
 );
 
 Create Table cartao (
@@ -126,7 +146,6 @@ Create Table cofrinho (
     dinheiro_econ double not null
 );
 
--- Insert test data
 INSERT INTO usuario (full_name, password, cpf, email, telefone) VALUES
 ('João Silva', '$2b$10$examplehash1', '12345678901', 'joao@email.com', '11987654321'),
 ('Maria Oliveira', '$2b$10$examplehash2', '98765432109', 'maria@email.com', '11987654322');
@@ -136,8 +155,8 @@ INSERT INTO endereco (rua, numero, cidade, uf, id_usuario) VALUES
 ('Rua B', 456, 'Rio de Janeiro', 'RJ', 2);
 
 INSERT INTO conta_bancaria (id_usuario, password, tipo_conta, saldo) VALUES
-(1, '123456', 'corrente', 1000.00),
-(2, '654321', 'corrente', 500.00);
+(1, '$2b$10$examplehash1', 'corrente', 1000.00),
+(2, '$2b$10$examplehash2', 'corrente', 500.00);
 
 INSERT INTO transacao (id_conta_origem, id_conta_destino, tipo, valor, descricao) VALUES
 (1, 2, 'transferência', 100.00, 'Teste transferência');

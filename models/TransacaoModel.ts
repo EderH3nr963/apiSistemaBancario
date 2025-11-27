@@ -37,7 +37,7 @@ TransacaoModel.init(
     id_conta_origem: {
       type: DataTypes.INTEGER,
       references: {
-        model: "conta",
+        model: "conta_bancaria",
         key: "id_conta",
       },
       onUpdate: "CASCADE",
@@ -46,7 +46,7 @@ TransacaoModel.init(
     id_conta_destino: {
       type: DataTypes.INTEGER,
       references: {
-        model: "conta",
+        model: "conta_bancaria",
         key: "id_conta",
       },
       onUpdate: "CASCADE",

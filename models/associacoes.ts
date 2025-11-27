@@ -4,6 +4,7 @@ import UsuarioModel from "./UsuarioModel";
 import EnderecoModel from "./EnderecoModel";
 import PagamentoModel from "./PagamentoModel";
 import EmprestimoModel from "./EmprestimoModel";
+import ParcelaModel from "./ParcelaModel";
 
 // Usuário tem uma conta
 UsuarioModel.hasOne(ContaModel, {
@@ -69,4 +70,14 @@ ContaModel.hasMany(EmprestimoModel, {
 EmprestimoModel.belongsTo(ContaModel, {
   as: "conta",
   foreignKey: "id_conta",
+});
+
+// Empréstimo tem muitas parcelas
+EmprestimoModel.hasMany(ParcelaModel, {
+  as: "parcelas",
+  foreignKey: "id_emprestimo",
+});
+ParcelaModel.belongsTo(EmprestimoModel, {
+  as: "emprestimo",
+  foreignKey: "id_emprestimo",
 });

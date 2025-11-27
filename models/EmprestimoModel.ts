@@ -4,8 +4,10 @@ import {
   InferAttributes,
   InferCreationAttributes,
   Model,
+  HasMany,
 } from "sequelize";
 import sequelize from "../config/database";
+import ParcelaModel from "./ParcelaModel";
 
 class EmprestimoModel extends Model<
   InferAttributes<EmprestimoModel>,
