@@ -4,19 +4,13 @@ import { sendEmail } from "../utils/sendEmail";
 
 class EmprestimoService {
   static async solicitar(id_conta: number, valor: number, prazo_meses: number, password: string) {
+    console.log('EmprestimoService.solicitar called with:', { id_conta, valor, prazo_meses });
     const transaction = await sequelize.transaction();
     try {
-      const conta = await ContaModel.findOne({
-        where: { id_conta },
-        include: [
-          {
-            model: UsuarioModel,
-            as: "usuario", // tem que ser o mesmo alias da associação
-          },
-        ],
-        transaction,
-      });
+      console.log('Finding conta...');
+      const conta = await ContaModel.findByPk(id_conta, { transaction });
       if (!conta) {
+        console.log('Conta not found');
         await transaction.rollback();
         return {
           status: "error",
@@ -24,7 +18,10 @@ class EmprestimoService {
           msg: "Conta não encontrada",
         };
       }
+      console.log('Conta found, saldo:', conta.saldo);
+      console.log('Validating password...');
       if (!(await conta.validPassword(password))) {
+        console.log('Invalid password');
         await transaction.rollback();
         return {
           status: "error",
@@ -32,10 +29,25 @@ class EmprestimoService {
           msg: "Senha inválida",
         };
       }
+      console.log('Password valid');
+
+      console.log('Finding usuario...');
+      const usuario = await UsuarioModel.findByPk(conta.id_usuario, { transaction });
+      if (!usuario) {
+        console.log('Usuario not found');
+        await transaction.rollback();
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Usuário não encontrado",
+        };
+      }
+      console.log('Usuario found');
 
       const taxa_juros = 0.01; // 1% ao mês
       const saldo_devedor = Number((valor * (1 + taxa_juros * prazo_meses)).toFixed(2));
 
+      console.log('Creating emprestimo...');
       const emprestimo = await EmprestimoModel.create(
         {
           id_conta,
@@ -48,13 +60,14 @@ class EmprestimoService {
         },
         { transaction }
       );
+      console.log('Emprestimo created, id:', emprestimo.id_emprestimo);
 
-      await conta.update(
-        { saldo: Number(conta.saldo) + Number(valor) },
-        { transaction }
-      );
+      console.log('Incrementing saldo...');
+      await conta.increment('saldo', { by: valor, transaction });
+      console.log('Saldo incremented');
 
-      await TransacaoModel.create(
+      console.log('Creating transacao...');
+      const transacao = await TransacaoModel.create(
         {
           id_conta_destino: id_conta,
           id_conta_origem: null, // Banco como origem
@@ -70,6 +83,7 @@ class EmprestimoService {
         },
         { transaction }
       );
+      console.log('Transacao created, id:', transacao.id_transacao);
 
       // Criar parcelas mensais
       const valorParcela = Number((saldo_devedor / prazo_meses).toFixed(2));
@@ -86,9 +100,13 @@ class EmprestimoService {
           status: "pendente",
         });
       }
+      console.log('Creating parcelas, count:', parcelas.length);
       await ParcelaModel.bulkCreate(parcelas, { transaction });
+      console.log('Parcelas created');
 
+      console.log('Committing transaction...');
       await transaction.commit();
+      console.log('Transaction committed');
 
       // Enviar email de confirmação (opcional)
       try {
@@ -160,16 +178,7 @@ class EmprestimoService {
   static async pagar(id_conta: number, id_parcela: number, password: string) {
     const transaction = await sequelize.transaction();
     try {
-      const conta = await ContaModel.findOne({
-        where: { id_conta },
-        include: [
-          {
-            model: UsuarioModel,
-            as: "usuario",
-          },
-        ],
-        transaction,
-      });
+      const conta = await ContaModel.findByPk(id_conta, { transaction });
       if (!conta) {
         await transaction.rollback();
         return {
@@ -184,6 +193,16 @@ class EmprestimoService {
           status: "error",
           statusCode: 400,
           msg: "Senha inválida",
+        };
+      }
+
+      const usuario = await UsuarioModel.findByPk(conta.id_usuario, { transaction });
+      if (!usuario) {
+        await transaction.rollback();
+        return {
+          status: "error",
+          statusCode: 400,
+          msg: "Usuário não encontrado",
         };
       }
 
@@ -236,10 +255,7 @@ class EmprestimoService {
       );
 
       // Debitar da conta
-      await conta.update(
-        { saldo: Number(conta.saldo) - Number(valor) },
-        { transaction }
-      );
+      await conta.decrement('saldo', { by: valor, transaction });
 
       // Criar transação
       const transacao = await TransacaoModel.create(

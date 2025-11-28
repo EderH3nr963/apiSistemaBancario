@@ -4,9 +4,12 @@ import { AuthRequest } from "../middlewares/AuthMiddleware";
 
 class EmprestimoController {
   static async solicitar(req: AuthRequest, res: Response) {
+    console.log('EmprestimoController.solicitar called');
     try {
       const id_conta = req.user?.id_conta_bancaria;
+      console.log('id_conta:', id_conta);
       if (!id_conta || typeof id_conta !== "number") {
+        console.log('User not authenticated');
         res.status(401).json({
           status: "error",
           statusCode: 401,
@@ -15,6 +18,7 @@ class EmprestimoController {
         return;
       }
       const { valor, prazo_meses, password } = req.body;
+      console.log('Request body:', { valor, prazo_meses, password });
 
       const response = await EmprestimoService.solicitar(id_conta, valor, prazo_meses, password);
       res.status(response.statusCode).json(response);
