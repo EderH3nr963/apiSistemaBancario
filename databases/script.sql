@@ -1,4 +1,4 @@
--- SQLite Banco de Dados
+io-- SQLite Banco de Dados
 
 CREATE TABLE usuario (
     id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,11 +140,6 @@ Create Table extrato (
     Foreign key (id_conta) references conta_bancaria (id_conta)
 );
 
-Create Table cofrinho (
-    id_cofre int primary key auto_increment,
-    meta varchar(100) not null,
-    dinheiro_econ double not null
-);
 
 INSERT INTO usuario (full_name, password, cpf, email, telefone) VALUES
 ('João Silva', '$2b$10$examplehash1', '12345678901', 'joao@email.com', '11987654321'),

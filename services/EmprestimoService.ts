@@ -242,7 +242,7 @@ class EmprestimoService {
       );
 
       // Criar transação
-      await TransacaoModel.create(
+      const transacao = await TransacaoModel.create(
         {
           id_conta_origem: id_conta,
           id_conta_destino: null, // Banco como destino
@@ -302,6 +302,7 @@ class EmprestimoService {
         statusCode: 200,
         msg: "Parcela paga com sucesso",
         parcela,
+        transactionId: transacao.id_transacao,
       };
     } catch (e) {
       await transaction.rollback();

@@ -157,18 +157,19 @@ class TransacaoService {
         };
       }
 
-      const usuario_destino = await UsuarioModel.findOne({
+      const usuario_origem = transacao.conta_origem ? await UsuarioModel.findOne({
         where: {
-          id_usuario: transacao.conta_origem?.id_usuario,
+          id_usuario: transacao.conta_origem.id_usuario,
         },
-        attributes: ["full_name", "email", "telefone"],
-      });
-      const usuario_origem = await UsuarioModel.findOne({
+        attributes: ["full_name", "email", "telefone", "cpf"],
+      }) : null;
+
+      const usuario_destino = transacao.conta_destino ? await UsuarioModel.findOne({
         where: {
-          id_usuario: transacao.conta_destino?.id_usuario,
+          id_usuario: transacao.conta_destino.id_usuario,
         },
-        attributes: ["full_name", "email", "telefone"],
-      });
+        attributes: ["full_name", "email", "telefone", "cpf"],
+      }) : null;
 
       // Verifica se o usuário logado está envolvido na transação
       if (

@@ -181,39 +181,6 @@ class UsuarioController {
     res.status(response.statusCode).json(response);
   }
 
-  static async addToCofrinho(req: Request, res: Response) {
-    const { valor } = req.body;
-    const id_usuario = req.user?.id_usuario;
-    if (!id_usuario || typeof id_usuario !== "number") {
-      res.status(503).json({
-        status: "error",
-        statusCode: 503,
-        msg: "Usuário não autentificado",
-      });
-      return;
-    }
-
-    const response = await UsuarioService.addToCofrinho(id_usuario, parseFloat(valor));
-
-    res.status(response.statusCode).json(response);
-  }
-
-  static async withdrawFromCofrinho(req: Request, res: Response) {
-    const { valor } = req.body;
-    const id_usuario = req.user?.id_usuario;
-    if (!id_usuario || typeof id_usuario !== "number") {
-      res.status(503).json({
-        status: "error",
-        statusCode: 503,
-        msg: "Usuário não autentificado",
-      });
-      return;
-    }
-
-    const response = await UsuarioService.withdrawFromCofrinho(id_usuario, parseFloat(valor));
-
-    res.status(response.statusCode).json(response);
-  }
 
   static async logout(req: Request, res: Response) {
     const id_usuario = req.user?.id_usuario;
