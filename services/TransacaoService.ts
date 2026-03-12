@@ -13,26 +13,22 @@ class TransacaoService {
   ) {
     const transaction = await sequelize.transaction();
     try {
-      const contaRemetente = await ContaModel.findByPk(id_conta);
+      const contaRemetente = await ContaModel.findByPk(id_conta, { transaction, lock: transaction.LOCK.UPDATE });
       const contaDestinario = await ContaModel.findOne({
         where: {
           [Op.or]: [
             { chave_transferencia: chave_transferencia },
-            {
-              "$usuario.cpf$": chave_transferencia
-            },
-            {
-              "$usuario.telefone$": chave_transferencia
-            }
-          ]
+            { "$usuario.cpf$": chave_transferencia },
+            { "$usuario.telefone$": chave_transferencia }]
         },
-        include: [
-          { model: UsuarioModel, as: "usuario" }
-        ]
+        include: [{ model: UsuarioModel, as: "usuario" }],
+        transaction,
+        lock: transaction.LOCK.UPDATE
       });
 
 
       if (!contaDestinario || !contaRemetente) {
+        transaction.rollback();
         return {
           status: "error",
           statusCode: 400,
@@ -63,7 +59,7 @@ class TransacaoService {
           msg: "Valor deve ser maior que zero",
         };
       }
-  
+
       if (contaRemetente.saldo < value) {
         return {
           status: "error",
@@ -85,16 +81,15 @@ class TransacaoService {
         { transaction }
       );
 
-      await Promise.all([
-        contaRemetente.update(
-          { saldo: Number(contaRemetente.saldo) - value },
-          { transaction }
-        ),
-        contaDestinario.update(
-          { saldo: Number(contaDestinario.saldo) + value },
-          { transaction }
-        ),
-      ]);
+      await contaRemetente.update(
+        { saldo: Number(contaRemetente.saldo) - value },
+        { transaction }
+      );
+
+      await contaDestinario.update(
+        { saldo: Number(contaDestinario.saldo) + value },
+        { transaction }
+      );
 
       await transaction.commit();
 
