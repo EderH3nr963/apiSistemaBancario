@@ -1,3 +1,4 @@
+-- Active: 1749333358067@@127.0.0.1@3306
 io-- SQLite Banco de Dados
 
 CREATE TABLE usuario (
@@ -139,7 +140,6 @@ Create Table extrato (
     tipo varchar(50) not null,
     Foreign key (id_conta) references conta_bancaria (id_conta)
 );
-
 
 INSERT INTO usuario (full_name, password, cpf, email, telefone) VALUES
 ('João Silva', '$2b$10$examplehash1', '12345678901', 'joao@email.com', '11987654321'),

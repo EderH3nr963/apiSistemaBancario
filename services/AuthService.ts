@@ -135,7 +135,6 @@ class AuthService {
         token: jwt_token
       };
     } catch (e) {
-      console.log(e);
       return {
         status: "error",
         statusCode: 500,

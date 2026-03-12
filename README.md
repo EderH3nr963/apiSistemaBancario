@@ -102,7 +102,7 @@ Realiza login no sistema.
 **Request Body:**
 ```json
 {
-  "email": "usuario@exemplo.com",
+  "cpf": "12345678901",
   "password": "Senha@123"
 }
 ```
